@@ -1,55 +1,2067 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>내 첫 번째 웹 프로그램</title>
-    <!-- Supabase 자바스크립트 라이브러리 불러오기 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-        input { padding: 10px; width: 300px; font-size: 16px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>국제산업렌탈 모바일 매니저</title>
+
+<!-- PWA & Mobile Web App Meta Tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#fbbf24">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1048/1048953.png">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- SheetJS for Excel Download -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- Firebase SDKs for Cloud Data Sharing -->
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+
+<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.type-설치 { background-color: #E0F2FE; color: #0369A1; border-color: #BAE6FD; }
+.type-해체 { background-color: #FEE2E2; color: #B91C1C; border-color: #FECACA; }
+.type-인상 { background-color: #FEF3C7; color: #B45309; border-color: #FDE68A; }
+
+.badge-설치 { background-color: #0284C7; color: white; }
+.badge-해체 { background-color: #DC2626; color: white; }
+.badge-인상 { background-color: #D97706; color: white; }
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+
+/* Safe Area Padding for Modern Smartphones */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+.pt-safe { padding-top: env(safe-area-inset-top, 0.5rem); }
+
+/* Fullscreen Calendar Overlay Style */
+.calendar-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100% !important;
+  z-index: 90 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background-color: #ffffff !important;
+  padding: 1rem !important;
+  overflow-y: auto !important;
+}
+
+.calendar-fullscreen .calendar-cell-fs {
+  min-height: 120px !important;
+}
+
+/* Modal Layering over Fullscreen Calendar */
+.modal-layer {
+  z-index: 100 !important;
+}
+</style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between antialiased">
 
-    <h1>방명록 남기기3</h1>
-    <p>여러분이 입력한 데이터가 Supabase DB에 안전하게 저장됩니다!</p>
+<!-- Mobile Top Header -->
+<header class="bg-amber-400 text-slate-900 shadow-sm sticky top-0 z-30 pt-safe">
+  <div class="px-4 py-3 flex justify-between items-center max-w-md mx-auto" id="header-container">
+    <div class="flex items-center space-x-2">
+      <div class="bg-slate-900 text-amber-400 p-2 rounded-xl font-black text-lg flex items-center justify-center w-9 h-9 shadow">
+        <i class="fa-solid fa-hard-hat"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <h1 class="font-extrabold text-base leading-tight">국제산업렌탈</h1>
+          <span id="admin-badge" class="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-slate-900 text-amber-400 hidden">ADMIN</span>
+          <span id="user-auth-badge" class="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-900 text-sky-200 hidden">로그인됨</span>
+        </div>
+        <p class="text-[10px] text-slate-800 font-medium">건설용리프트 설치·해체·인상 앱</p>
+      </div>
+    </div>
 
-    <!-- 입력 폼 -->
-    <input type="text" id="userInput" placeholder="내용을 입력하세요...">
-    <button onclick="saveData()">저장하기</button>
+    <!-- Auth Buttons & Admin Tools -->
+    <div class="flex items-center gap-1">
+      <button id="btn-user-login" onclick="openUserAuthModal()" class="bg-sky-900 hover:bg-sky-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm">
+        <i class="fa-solid fa-user text-[10px] text-amber-300"></i>
+        <span id="txt-user-login-btn">로그인/가입</span>
+      </button>
 
-    <script>
-        // 1. Supabase 연결 설정 (본인 정보로 수정)
-        const SUPABASE_URL = 'https://qzjreahrkwlaztuemhlj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6anJlYWhya3dsYXp0dWVtaGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTAzOTYsImV4cCI6MjEwMzI2NjM5Nn0.1l50lQ93Sh6JpWWnFN3ICHwVwvBPhTfFfPe2WWstzwY';
-        
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      <button id="btn-admin-login" onclick="openAdminLoginModal()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm">
+        <i class="fa-solid fa-lock text-[10px]"></i>
+        <span>관리자</span>
+      </button>
 
-        // 2. 저장하기 버튼을 눌렀을 때 실행되는 함수
-        async function saveData() {
-            const textValue = document.getElementById('userInput').value;
-            
-            if (!textValue) {
-                alert('내용을 입력해주세요!');
-                return;
-            }
+      <div id="admin-active-tools" class="hidden flex items-center gap-1">
+        <button onclick="openTeamRegionManageModal()" class="bg-slate-800 text-amber-400 text-xs p-2 rounded-lg font-semibold transition" title="권역 및 25개팀 관리">
+          <i class="fa-solid fa-people-roof text-xs"></i>
+        </button>
+        <button onclick="openCloudConfigModal()" class="bg-slate-800 text-sky-300 text-xs p-2 rounded-lg font-semibold transition" title="클라우드 동기화 설정">
+          <i class="fa-solid fa-cloud text-xs"></i>
+        </button>
+        <button onclick="openUserPermissionManageModal()" class="bg-slate-800 text-amber-300 text-xs p-2 rounded-lg font-semibold transition relative" title="회원 관리">
+          <i class="fa-solid fa-users-gear text-xs"></i>
+          <span id="pending-users-count-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full hidden">0</span>
+        </button>
+        <button onclick="adminLogout()" class="bg-red-700 text-white text-xs p-2 rounded-lg font-semibold transition" title="로그아웃">
+          <i class="fa-solid fa-right-from-bracket text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
 
-            // Supabase의 'messages' 테이블에 데이터 넣기
-            const { data, error } = await _supabase
-                .from('messages')
-                .insert([{ content: textValue }]);
+<!-- Main Content View Area -->
+<main class="flex-grow w-full px-3 py-3 pb-24 max-w-md mx-auto transition-all duration-300" id="main-content-area">
 
-            if (error) {
-                console.error('저장 에러:', error);
-                alert('저장에 실패했습니다.');
-            } else {
-                alert('성공적으로 저장되었습니다!');
-                document.getElementById('userInput').value = ''; // 입력창 비우기
-            }
+  <!-- TAB 1: CALENDAR & LIST VIEW -->
+  <section id="view-calendar" class="space-y-3">
+    <!-- Cloud Status Bar -->
+    <div id="cloud-status-banner" class="bg-slate-900 text-amber-300 px-3 py-1.5 rounded-xl text-[11px] font-bold flex justify-between items-center shadow-xs">
+      <span class="flex items-center gap-1.5"><i class="fa-solid fa-cloud text-sky-400"></i> <span id="cloud-status-text">로컬 저장소 동작 중</span></span>
+      <span id="cloud-sync-indicator" class="text-[9px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-mono">OFFLINE</span>
+    </div>
+
+    <!-- Quick Counter -->
+    <div class="grid grid-cols-4 gap-1.5 text-center bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
+      <div class="p-1 rounded-lg bg-slate-50">
+        <p class="text-[10px] text-slate-500 font-semibold">전체</p>
+        <p id="stat-total" class="text-sm font-bold text-slate-800">0</p>
+      </div>
+      <div class="p-1 rounded-lg bg-sky-50">
+        <p class="text-[10px] text-sky-600 font-semibold">설치</p>
+        <p id="stat-install" class="text-sm font-bold text-sky-700">0</p>
+      </div>
+      <div class="p-1 rounded-lg bg-red-50">
+        <p class="text-[10px] text-red-600 font-semibold">해체</p>
+        <p id="stat-dismantle" class="text-sm font-bold text-red-700">0</p>
+      </div>
+      <div class="p-1 rounded-lg bg-amber-50">
+        <p class="text-[10px] text-amber-600 font-semibold">인상</p>
+        <p id="stat-jacking" class="text-sm font-bold text-amber-700">0</p>
+      </div>
+    </div>
+
+    <!-- Controls & Filter Bar -->
+    <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs space-y-2">
+      <div class="flex justify-between items-center flex-wrap gap-1">
+        <div class="flex gap-1 text-xs">
+          <button onclick="setFilter('전체')" id="filter-all" class="filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-900 text-white text-[11px]">전체</button>
+          <button onclick="setFilter('설치')" id="filter-설치" class="filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">설치</button>
+          <button onclick="setFilter('해체')" id="filter-해체" class="filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">해체</button>
+          <button onclick="setFilter('인상')" id="filter-인상" class="filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">인상</button>
+        </div>
+
+        <div class="flex items-center gap-1">
+          <button onclick="toggleExpandCalendar()" id="btn-expand-calendar" class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition">
+            <i class="fa-solid fa-expand text-[10px]" id="expand-icon"></i>
+            <span id="expand-btn-text">전체화면</span>
+          </button>
+
+          <button onclick="exportTasksToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition" title="엑셀 내보내기">
+            <i class="fa-solid fa-file-excel text-[11px]"></i> 엑셀
+          </button>
+
+          <button onclick="handleAddTaskClick()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition">
+            <i class="fa-solid fa-plus text-[10px]"></i> 추가
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-100">
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] font-bold text-slate-500 shrink-0"><i class="fa-solid fa-map-location-dot"></i> 지역:</span>
+          <select id="region-filter-select" onchange="setRegionFilter(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg text-xs p-1 font-semibold text-slate-700 outline-none focus:border-amber-400">
+            <option value="전체">전체 지역</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] font-bold text-slate-500 shrink-0"><i class="fa-solid fa-users"></i> 팀:</span>
+          <select id="team-filter-select" onchange="setTeamFilter(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg text-xs p-1 font-semibold text-slate-700 outline-none focus:border-amber-400">
+            <option value="전체">전체 팀 보기</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div id="calendar-wrapper" class="bg-white rounded-xl shadow-xs border border-slate-200/80 p-3 transition-all duration-300">
+      <div class="flex justify-between items-center mb-3">
+        <h2 id="calendar-month-year" class="text-base font-extrabold text-slate-800">2026년 8월</h2>
+        <div class="flex items-center gap-1">
+          <button onclick="prevMonth()" class="p-1.5 active:bg-slate-100 rounded-lg text-slate-600"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+          <button onclick="todayMonth()" class="px-2 py-1 text-[11px] bg-slate-100 active:bg-slate-200 rounded-md font-bold text-slate-700">오늘</button>
+          <button onclick="nextMonth()" class="p-1.5 active:bg-slate-100 rounded-lg text-slate-600"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+
+          <!-- Fullscreen Extra Action Buttons -->
+          <button id="fs-add-btn" onclick="handleAddTaskClick()" class="hidden ml-1 px-2.5 py-1 text-xs bg-emerald-600 active:bg-emerald-700 text-white font-extrabold rounded-lg shadow-xs flex items-center gap-1">
+            <i class="fa-solid fa-plus text-[10px]"></i> 일정 추가
+          </button>
+          <button id="fs-close-btn" onclick="toggleExpandCalendar()" class="hidden ml-1 px-2.5 py-1 text-xs bg-red-600 active:bg-red-700 text-white font-extrabold rounded-lg shadow-xs">
+            <i class="fa-solid fa-xmark"></i> 닫기
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-slate-400 py-1 border-b border-slate-100">
+        <div class="text-red-500">일</div>
+        <div>월</div>
+        <div>화</div>
+        <div>수</div>
+        <div>목</div>
+        <div>금</div>
+        <div class="text-blue-500">토</div>
+      </div>
+
+      <div id="calendar-grid" class="grid grid-cols-7 gap-1 mt-1 text-xs"></div>
+    </div>
+  </section>
+
+  <!-- TAB 2: KAKAOTALK EXTRACTOR -->
+  <section id="view-extractor" class="space-y-3 hidden">
+    <div class="bg-white rounded-xl shadow-xs border border-slate-200/80 p-3.5 space-y-3">
+      <div>
+        <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+          카톡 대화 일정 자동 추출
+        </h2>
+        <p class="text-[11px] text-slate-500 mt-0.5">
+          카톡 메시지를 붙여넣으면 권역, 현장명, 작업내용, 수량, 장비 정보, 마스트 정보를 자동 추출합니다.
+        </p>
+      </div>
+
+      <textarea id="chat-input" rows="7" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-400 outline-none text-xs font-mono placeholder:text-slate-400" placeholder="카톡 대화 복사 후 붙여넣기..."></textarea>
+
+      <div class="flex justify-between items-center gap-2">
+        <button onclick="insertSampleChat()" class="px-2.5 py-1.5 text-[11px] bg-slate-100 active:bg-slate-200 rounded-lg font-semibold text-slate-700">
+          샘플 입력
+        </button>
+        <button id="btn-extract" onclick="extractTasksFromChat()" class="px-4 py-2 text-xs bg-amber-400 active:bg-amber-500 font-extrabold rounded-lg text-slate-900 flex items-center gap-1 shadow-xs">
+          <i class="fa-solid fa-robot"></i> 일정 자동 추출
+        </button>
+      </div>
+    </div>
+
+    <div id="parsed-results-container" class="hidden bg-white rounded-xl shadow-xs border border-slate-200/80 p-3.5 space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 class="text-xs font-bold text-slate-800">
+          추출 결과 (<span id="parsed-count">0</span>건)
+        </h3>
+        <button onclick="saveAllParsedTasks()" class="px-3 py-1.5 text-xs bg-emerald-600 active:bg-emerald-700 text-white font-bold rounded-lg shadow-xs">
+          선택 일정 저장
+        </button>
+      </div>
+
+      <div id="parsed-list" class="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar"></div>
+    </div>
+  </section>
+
+  <!-- TAB 3: EQUIPMENT UTILIZATION PAGE -->
+  <section id="view-utilization" class="space-y-3 hidden">
+    <div class="bg-white rounded-xl shadow-xs border border-slate-200/80 p-3.5 space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <div>
+          <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-line text-emerald-600"></i>
+            전체 현장 장비 가동률 분석
+          </h2>
+          <p class="text-[11px] text-slate-500 mt-0.5">설치(+수량) 및 해체(-수량) 기반 장비 가동 현황</p>
+        </div>
+        <button onclick="openTotalInventoryModal()" class="px-2.5 py-1 text-[11px] bg-slate-900 text-amber-400 font-bold rounded-lg shadow-2xs">
+          <i class="fa-solid fa-gear"></i> 총 장비 수량
+        </button>
+      </div>
+
+      <div class="bg-slate-900 text-white p-3.5 rounded-2xl space-y-2 shadow-md">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-slate-300 font-semibold"><i class="fa-solid fa-calculator text-amber-400"></i> 전체 가동률</span>
+          <span id="utilization-rate-badge" class="text-lg font-black text-amber-400">0%</span>
+        </div>
+
+        <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
+          <div id="utilization-progress-bar" class="bg-amber-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-1 text-center pt-1 border-t border-slate-800/80 text-[11px]">
+          <div>
+            <span class="text-slate-400 block text-[10px]">총 보유 장비</span>
+            <span id="stat-total-inventory" class="font-extrabold text-white text-xs">50대</span>
+          </div>
+          <div>
+            <span class="text-sky-400 block text-[10px]">현재 가동 중</span>
+            <span id="stat-active-equipment" class="font-extrabold text-sky-400 text-xs">0대</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px]">유휴(보관) 장비</span>
+            <span id="stat-idle-equipment" class="font-extrabold text-slate-300 text-xs">0대</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+        <span class="text-xs font-bold text-slate-600 shrink-0"><i class="fa-regular fa-calendar"></i> 기준일자:</span>
+        <input type="date" id="utilization-date-picker" onchange="renderUtilizationView()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs font-bold bg-white outline-none">
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold text-slate-800 mb-2 flex justify-between items-center">
+          <span><i class="fa-solid fa-building text-sky-600"></i> 현장별 설치/해체 가동 내역</span>
+          <span id="utilization-site-count" class="text-[10px] text-slate-500 font-semibold">0개 현장</span>
+        </h3>
+        <div id="utilization-site-list" class="space-y-2 max-h-[320px] overflow-y-auto custom-scrollbar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: WEEKLY KAKAO SUMMARY & TEAM EXTRACTION -->
+  <section id="view-summary" class="space-y-3 hidden">
+    <div class="bg-white rounded-xl shadow-xs border border-slate-200/80 p-3.5 space-y-3">
+      <div>
+        <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-paper-plane text-sky-500"></i>
+          카톡 공유용 주간 일정 & 팀별/지역별 요약
+        </h2>
+        <p class="text-[11px] text-slate-500 mt-0.5">선택한 주간의 일정 또는 특정 지역/팀 전용 일정을 카톡 포맷으로 자동 요약합니다.</p>
+      </div>
+
+      <div class="space-y-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 text-xs">
+        <div class="flex gap-2 items-center">
+          <label class="font-bold text-slate-600 w-16">시작일:</label>
+          <input type="date" id="summary-start-date" class="border border-slate-300 rounded-lg p-1.5 text-xs flex-grow outline-none focus:border-amber-400 bg-white">
+        </div>
+
+        <div class="flex gap-2 items-center">
+          <label class="font-bold text-slate-600 w-16">지역 구분:</label>
+          <select id="summary-region-select" onchange="updateSummaryTeamOptions(this.value)" class="border border-slate-300 rounded-lg p-1.5 text-xs flex-grow outline-none focus:border-amber-400 bg-white font-semibold">
+            <option value="전체">전체 지역</option>
+          </select>
+        </div>
+
+        <div class="flex gap-2 items-center">
+          <label class="font-bold text-slate-600 w-16">대상 팀:</label>
+          <select id="summary-team-select" class="border border-slate-300 rounded-lg p-1.5 text-xs flex-grow outline-none focus:border-amber-400 bg-white font-semibold">
+            <option value="전체">전체 팀 일정</option>
+          </select>
+        </div>
+
+        <button onclick="generateWeeklySummaryText()" class="w-full py-2 text-xs bg-slate-900 active:bg-slate-800 text-white font-bold rounded-lg shadow-xs">
+          주간 / 지역별 요약 생성
+        </button>
+      </div>
+
+      <div class="relative">
+        <textarea id="summary-output" rows="12" readonly class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 font-mono text-xs leading-relaxed outline-none"></textarea>
+        <button onclick="copySummaryToClipboard()" class="absolute top-2.5 right-2.5 px-2.5 py-1.5 bg-amber-400 active:bg-amber-500 text-slate-900 font-extrabold text-xs rounded-lg shadow-xs flex items-center gap-1">
+          <i class="fa-solid fa-copy text-[10px]"></i> 복사
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Mobile Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 shadow-lg z-30 pb-safe" id="bottom-nav">
+  <div class="max-w-md mx-auto grid grid-cols-4 text-center py-1.5" id="bottom-nav-container">
+    <button id="nav-calendar" onclick="switchTab('calendar')" class="flex flex-col items-center justify-center py-1 text-amber-600 font-bold">
+      <i class="fa-regular fa-calendar-days text-base mb-0.5"></i>
+      <span class="text-[10px]">일정표</span>
+    </button>
+    <button id="nav-extractor" onclick="switchTab('extractor')" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
+      <i class="fa-solid fa-comments text-base mb-0.5"></i>
+      <span class="text-[10px]">카톡추출</span>
+    </button>
+    <button id="nav-utilization" onclick="switchTab('utilization')" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
+      <i class="fa-solid fa-chart-pie text-base mb-0.5"></i>
+      <span class="text-[10px]">가동률</span>
+    </button>
+    <button id="nav-summary" onclick="switchTab('summary')" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
+      <i class="fa-solid fa-copy text-base mb-0.5"></i>
+      <span class="text-[10px]">지역/주간요약</span>
+    </button>
+  </div>
+</nav>
+
+<!-- User Login & Signup Modal -->
+<div id="user-auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden flex flex-col">
+    <div class="p-3 bg-sky-900 text-white flex justify-between items-center">
+      <h3 class="font-bold text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-user-plus text-amber-300"></i> 사용자 로그인 / 회원가입
+      </h3>
+      <button onclick="closeUserAuthModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-3 text-xs">
+      <div>
+        <label class="font-bold text-slate-700 block mb-1">성명 (이름) *</label>
+        <input type="text" id="auth-user-name" placeholder="예: 홍길동" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-bold">
+      </div>
+      <div>
+        <label class="font-bold text-slate-700 block mb-1">전화번호 (휴대폰)</label>
+        <input type="tel" id="auth-user-phone" placeholder="예: 01012345678" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono">
+      </div>
+      <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+        <p class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+          <i class="fa-solid fa-shield-halved text-amber-600"></i> 회원가입 승인 안내
+        </p>
+        <p class="text-[10px] text-slate-600 leading-relaxed">
+          신규 가입 시 <b class="text-red-600">[관리자 승인 대기 / 읽기 전용]</b> 상태로 시작됩니다. 최고관리자가 승인해야 일정 등록 및 수정을 할 수 있습니다.
+        </p>
+      </div>
+    </div>
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+      <button id="btn-user-logout" onclick="userLogout()" class="px-3 py-1.5 text-xs bg-red-100 text-red-700 font-bold rounded-lg hidden">로그아웃</button>
+      <div class="flex gap-1.5 ml-auto">
+        <button onclick="closeUserAuthModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
+        <button onclick="handleUserAuthSubmit()" class="px-4 py-1.5 text-xs bg-sky-900 text-white font-bold rounded-lg shadow-xs">가입 / 로그인</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Login Modal -->
+<div id="admin-login-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden flex flex-col">
+    <div class="p-3 bg-slate-900 text-white flex justify-between items-center">
+      <h3 class="font-bold text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-user-shield text-amber-400"></i> 최고 관리자 인증
+      </h3>
+      <button onclick="closeAdminLoginModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-3 text-xs">
+      <div>
+        <label class="font-bold text-slate-700 block mb-1">관리자 비밀번호</label>
+        <input type="password" id="input-admin-pw" placeholder="암호 입력 (기본: 1234)" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono">
+      </div>
+    </div>
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-1.5">
+      <button onclick="closeAdminLoginModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
+      <button onclick="verifyAdminLogin()" class="px-4 py-1.5 text-xs bg-amber-400 text-slate-900 font-bold rounded-lg">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP ADMIN ONLY: Region & Team Manage Modal -->
+<div id="team-region-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-3 hidden">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[88vh]">
+    <div class="p-3.5 bg-slate-900 text-white flex justify-between items-center">
+      <h3 class="font-bold text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-people-roof text-amber-400"></i> 권역/지역 및 분야별 25개 팀 관리
+      </h3>
+      <button onclick="closeTeamRegionManageModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Region Editor Control Subbar -->
+    <div class="p-3 bg-slate-100 border-b border-slate-200 text-xs space-y-2">
+      <div class="flex items-center justify-between gap-1">
+        <span class="font-extrabold text-slate-700"><i class="fa-solid fa-map-pin text-amber-600"></i> 선택 권역:</span>
+        <div class="flex items-center gap-1">
+          <select id="admin-manage-region-select" onchange="renderTeamManageList(this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs font-bold bg-white outline-none"></select>
+          <button onclick="addNewRegionPrompt()" class="bg-sky-800 text-white px-2 py-1 rounded text-[11px] font-bold"><i class="fa-solid fa-plus"></i> 권역추가</button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1 border-t border-slate-200">
+        <label class="font-bold text-slate-600 shrink-0 text-[11px]">권역명 수정:</label>
+        <input type="text" id="admin-edit-region-name" class="border border-slate-300 rounded p-1 text-xs flex-grow font-bold outline-none">
+        <button onclick="renameCurrentRegion()" class="bg-slate-800 text-amber-400 px-2 py-1 rounded text-[11px] font-bold">이름변경</button>
+        <button onclick="deleteCurrentRegion()" class="bg-red-700 text-white px-2 py-1 rounded text-[11px] font-bold">권역삭제</button>
+      </div>
+    </div>
+
+    <div id="admin-team-list-container" class="p-3 overflow-y-auto space-y-3 custom-scrollbar flex-grow"></div>
+
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+      <button onclick="resetTeamsToDefault()" class="px-3 py-1.5 text-xs bg-red-100 text-red-700 font-bold rounded-lg">기본값 초기화</button>
+      <div class="flex gap-1.5">
+        <button onclick="closeTeamRegionManageModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">닫기</button>
+        <button onclick="saveTeamRegionChanges()" class="px-4 py-1.5 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">팀 변경사항 저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOP ADMIN ONLY: Cloud Sync Config Modal -->
+<div id="cloud-config-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col">
+    <div class="p-3 bg-slate-900 text-white flex justify-between items-center">
+      <h3 class="font-bold text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-cloud text-amber-400"></i> 클라우드 데이터 공유 연동 설정
+      </h3>
+      <button onclick="closeCloudConfigModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-2 text-xs">
+      <p class="text-[11px] text-slate-600">Firebase Firestore 설정을 입력하면 모든 사용자가 실시간으로 일정을 공유할 수 있습니다.</p>
+      <div>
+        <label class="font-bold text-slate-700 block mb-0.5">API Key</label>
+        <input type="text" id="cfg-apiKey" placeholder="Firebase API Key" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
+      </div>
+      <div>
+        <label class="font-bold text-slate-700 block mb-0.5">Project ID</label>
+        <input type="text" id="cfg-projectId" placeholder="Project ID" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
+      </div>
+      <div>
+        <label class="font-bold text-slate-700 block mb-0.5">App ID</label>
+        <input type="text" id="cfg-appId" placeholder="App ID" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
+      </div>
+    </div>
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+      <button onclick="disconnectCloud()" class="px-2.5 py-1.5 text-xs bg-red-100 text-red-700 font-bold rounded-lg">연동 해제</button>
+      <div class="flex gap-1.5">
+        <button onclick="closeCloudConfigModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
+        <button onclick="saveCloudConfig()" class="px-4 py-1.5 text-xs bg-amber-400 text-slate-900 font-bold rounded-lg">연동 및 저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOP ADMIN ONLY: User Permission & Approval Manage Modal -->
+<div id="user-perm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-3 hidden">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh]">
+    <div class="p-3.5 bg-slate-900 text-white flex justify-between items-center">
+      <h3 class="font-bold text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-users-gear text-amber-400"></i> 회원가입 승인 & 일정 수정 권한 관리
+      </h3>
+      <button onclick="closeUserPermissionManageModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-3 bg-slate-50 border-b border-slate-200 text-[11px] text-slate-600">
+      신규 가입 회원은 <b>[승인 대기]</b> 상태로 시작합니다. 승인 스위치를 켜면 일정 등록 및 수정 권한이 부여됩니다.
+    </div>
+    <div id="user-perm-list" class="p-3 overflow-y-auto space-y-2 custom-scrollbar flex-grow"></div>
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-end">
+      <button onclick="closeUserPermissionManageModal()" class="px-4 py-1.5 text-xs bg-slate-900 text-white font-bold rounded-lg">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Total Inventory Setup Modal -->
+<div id="total-inventory-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden flex flex-col">
+    <div class="p-3 bg-slate-900 text-white flex justify-between items-center">
+      <h3 class="font-bold text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-boxes-stacked text-amber-400"></i> 총 장비 보유 수량 설정
+      </h3>
+      <button onclick="closeTotalInventoryModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-3 text-xs">
+      <div>
+        <label class="font-bold text-slate-700 block mb-1">전체 장비 총 보유 대수 (대)</label>
+        <input type="number" id="input-total-inventory" placeholder="예: 50" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-bold text-slate-800">
+      </div>
+    </div>
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-1.5">
+      <button onclick="closeTotalInventoryModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
+      <button onclick="saveTotalInventory()" class="px-4 py-1.5 text-xs bg-amber-400 text-slate-900 font-bold rounded-lg shadow-xs">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Creating / Editing Task -->
+<div id="task-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+  <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="p-3.5 bg-slate-900 text-white flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <h3 id="modal-title" class="font-bold text-xs sm:text-sm">작업 일정 등록</h3>
+      </div>
+      <button onclick="closeModal()" class="text-slate-400 active:text-white p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+    </div>
+
+    <div class="p-4 overflow-y-auto space-y-3 text-xs custom-scrollbar">
+      <input type="hidden" id="task-id">
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">작업 일자 *</label>
+          <input type="date" id="form-date" class="w-full border border-slate-300 rounded-lg p-2 outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">작업 구분 *</label>
+          <select id="form-workType" class="w-full border border-slate-300 rounded-lg p-2 outline-none focus:border-amber-500 font-bold">
+            <option value="설치">설치</option>
+            <option value="해체">해체</option>
+            <option value="인상">인상</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="font-bold text-slate-700 block mb-1"><i class="fa-solid fa-map-pin text-amber-500"></i> 담당 권역/지역 *</label>
+        <select id="form-region" onchange="updateFormTeamDropdowns(this.value)" class="w-full border border-slate-300 rounded-lg p-2 outline-none focus:border-amber-500 font-bold bg-white">
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">현장명 * <span class="text-[10px] text-slate-400">(예: 현대반포)</span></label>
+          <input type="text" id="form-siteName" placeholder="예: 현대반포" class="w-full border border-slate-300 rounded-lg p-2 outline-none focus:border-amber-500 font-bold">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">작업내용 <span class="text-[10px] text-slate-400">(예: 102동)</span></label>
+          <input type="text" id="form-workContent" placeholder="예: 102동1호" class="w-full border border-slate-300 rounded-lg p-2 outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">수량 * <span class="text-[10px] text-slate-400">(가동률 반영)</span></label>
+          <input type="number" id="form-quantity" value="1" min="1" placeholder="예: 2" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-bold text-amber-800 bg-amber-50/50">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">장비 정보 * <span class="text-[10px] text-slate-400">(예: 1535S)</span></label>
+          <input type="text" id="form-equipment" placeholder="예: 1535S" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-bold">
+        </div>
+      </div>
+
+      <!-- 4 Fields Expanded to 25 Teams Each -->
+      <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-2">
+        <p class="font-bold text-slate-800 text-[11px] flex items-center justify-between border-b border-slate-200 pb-1">
+          <span><i class="fa-solid fa-users text-amber-500"></i> 작업팀 선택 (각 1~25팀)</span>
+        </p>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-sky-800 block mb-1"><i class="fa-solid fa-wrench"></i> 설치팀</label>
+            <select id="form-installTeam" class="w-full border border-slate-300 rounded-lg p-1.5 outline-none font-semibold bg-white text-[11px]">
+              <option value="">(선택 안함)</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-bold text-amber-800 block mb-1"><i class="fa-solid fa-shield-halved"></i> 안전문팀</label>
+            <select id="form-safetyTeam" class="w-full border border-slate-300 rounded-lg p-1.5 outline-none font-semibold bg-white text-[11px]">
+              <option value="">(선택 안함)</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-bold text-indigo-800 block mb-1"><i class="fa-solid fa-gear"></i> 자동팀</label>
+            <select id="form-autoTeam" class="w-full border border-slate-300 rounded-lg p-1.5 outline-none font-semibold bg-white text-[11px]">
+              <option value="">(선택 안함)</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-bold text-emerald-800 block mb-1"><i class="fa-solid fa-hard-hat"></i> 방호선반팀</label>
+            <select id="form-shelfTeam" class="w-full border border-slate-300 rounded-lg p-1.5 outline-none font-semibold bg-white text-[11px]">
+              <option value="">(선택 안함)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mast Calculation Box (Standard: 1,508mm = 1.508m) -->
+      <div class="bg-amber-50/70 p-3 rounded-xl border border-amber-200 space-y-2">
+        <p class="font-bold text-amber-900 text-[11px] flex items-center gap-1">
+          <i class="fa-solid fa-ruler-vertical text-amber-600"></i> 마스트 높이 연산 (기준: 1,508mm)
+        </p>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-600 font-semibold block mb-0.5">마스트 단수</label>
+            <input type="number" id="form-mastCount" placeholder="예: 3" class="w-full border border-amber-300 rounded-lg p-1.5 outline-none bg-white text-xs" oninput="calculateHeight()">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-600 font-semibold block mb-0.5">계산 높이</label>
+            <input type="text" id="form-mastHeight" placeholder="자동 계산" readonly class="w-full border border-amber-200 rounded-lg p-1.5 outline-none bg-amber-100/60 text-xs font-bold text-amber-900">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="font-bold text-slate-700 block mb-1">비고 / 담당자 메모</label>
+        <textarea id="form-notes" rows="2" placeholder="담당자 및 특이사항 입력" class="w-full border border-slate-300 rounded-lg p-2 outline-none"></textarea>
+      </div>
+    </div>
+
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-between pb-safe">
+      <button id="btn-delete" onclick="deleteCurrentTask()" class="px-3 py-2 text-xs bg-red-100 text-red-700 font-bold rounded-lg hidden">
+        삭제
+      </button>
+      <div class="flex gap-2 ml-auto">
+        <button onclick="saveTaskFromModal()" class="px-4 py-2 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">
+          저장하기
+        </button>
+        <button onclick="closeModal()" class="px-3 py-2 text-xs bg-slate-200 text-slate-700 font-bold rounded-lg">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Day Schedule List Sheet Modal -->
+<div id="day-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+  <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
+    <div class="p-3.5 bg-amber-400 text-slate-900 flex justify-between items-center">
+      <div>
+        <h3 id="day-detail-title" class="font-extrabold text-xs sm:text-sm">작업 일정 목록</h3>
+        <p class="text-[10px] font-semibold text-slate-800">선택일 세부 일정 관리</p>
+      </div>
+      <button onclick="closeDayDetailModal()" class="text-slate-900 p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+    </div>
+
+    <div id="day-detail-list" class="p-3 overflow-y-auto space-y-2 custom-scrollbar flex-grow"></div>
+
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center pb-safe">
+      <span id="day-detail-count" class="text-[11px] font-bold text-slate-500">총 0개</span>
+      <div class="flex gap-1.5">
+        <button id="day-detail-add-btn" onclick="addNewTaskForCurrentDay()" class="px-3 py-1.5 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">
+          <i class="fa-solid fa-plus text-[10px] mr-1"></i> 일정 추가
+        </button>
+        <button onclick="closeDayDetailModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-bold rounded-lg">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Duplicate Warning Modal -->
+<div id="duplicate-warning-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden flex flex-col">
+    <div class="p-3.5 bg-red-600 text-white flex justify-between items-center">
+      <h3 class="font-bold text-xs flex items-center gap-1.5">
+        <i class="fa-solid fa-triangle-exclamation text-amber-300"></i> 일정 중복 경고
+      </h3>
+      <button onclick="closeDuplicateWarningModal()" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-2 text-xs">
+      <p id="duplicate-warning-msg" class="text-slate-700 leading-relaxed font-medium">
+        동일한 날짜에 동일한 팀 일정 중복이 감지되었습니다.
+      </p>
+      <div id="duplicate-details-list" class="bg-red-50 border border-red-200 p-2 rounded-lg text-[11px] text-red-800 space-y-1 font-mono"></div>
+      <p class="text-[11px] text-slate-500 pt-1">그래도 저장하시겠습니까?</p>
+    </div>
+    <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-1.5">
+      <button onclick="closeDuplicateWarningModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
+      <button onclick="confirmSaveTaskAnyway()" class="px-4 py-1.5 text-xs bg-red-600 text-white font-bold rounded-lg shadow-xs">강제 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- App Logic Script -->
+<script>
+// --- CONSTANTS & MAST CONFIGURATION ---
+const MAST_HEIGHT_MM = 1508; // User preferred mast unit height: 1,508 mm
+
+// 대한민국 주요 법정 공휴일 및 대체 공휴일 (YYYY-MM-DD : 공휴일 명칭)
+const HOLIDAYS = {
+  // 2025년
+  "2025-01-01": "신정",
+  "2025-01-28": "설날 연휴",
+  "2025-01-29": "설날",
+  "2025-01-30": "설날 연휴",
+  "2025-03-01": "삼일절",
+  "2025-03-03": "대체공휴일",
+  "2025-05-05": "어린이날/석가탄신일",
+  "2025-05-06": "대체공휴일",
+  "2025-06-06": "현충일",
+  "2025-08-15": "광복절",
+  "2025-10-03": "개천절",
+  "2025-10-05": "추석 연휴",
+  "2025-10-06": "추석",
+  "2025-10-07": "추석 연휴",
+  "2025-10-08": "대체공휴일",
+  "2025-10-09": "한글날",
+  "2025-12-25": "성탄절",
+
+  // 2026년
+  "2026-01-01": "신정",
+  "2026-02-16": "설날 연휴",
+  "2026-02-17": "설날",
+  "2026-02-18": "설날 연휴",
+  "2026-03-01": "삼일절",
+  "2026-03-02": "대체공휴일",
+  "2026-05-05": "어린이날",
+  "2026-05-24": "석가탄신일",
+  "2026-05-25": "대체공휴일",
+  "2026-06-06": "현충일",
+  "2026-08-15": "광복절",
+  "2026-08-17": "대체공휴일",
+  "2026-09-24": "추석 연휴",
+  "2026-09-25": "추석",
+  "2026-09-26": "추석 연휴",
+  "2026-10-03": "개천절",
+  "2026-10-05": "대체공휴일",
+  "2026-10-09": "한글날",
+  "2026-12-25": "성탄절",
+
+  // 2027년
+  "2027-01-01": "신정",
+  "2027-02-06": "설날 연휴",
+  "2027-02-07": "설날",
+  "2027-02-08": "설날 연휴",
+  "2027-02-09": "대체공휴일",
+  "2027-03-01": "삼일절",
+  "2027-05-05": "어린이날",
+  "2027-05-13": "석가탄신일",
+  "2027-06-06": "현충일",
+  "2027-08-15": "광복절",
+  "2027-08-16": "대체공휴일",
+  "2027-09-14": "추석 연휴",
+  "2027-09-15": "추석",
+  "2027-09-16": "추석 연휴",
+  "2027-10-03": "개천절",
+  "2027-10-04": "대체공휴일",
+  "2027-10-09": "한글날",
+  "2027-12-25": "성탄절"
+};
+
+// Default Initial Team Setup (25 Teams per category across default regions)
+const DEFAULT_REGIONS = ["수도권", "영남권", "호남권", "충청/강원"];
+
+function generateDefaultTeams() {
+  const teams = {};
+  DEFAULT_REGIONS.forEach(reg => {
+    teams[reg] = {
+      install: Array.from({ length: 25 }, (_, i) => `${reg} 설치${i + 1}팀`),
+      safety: Array.from({ length: 25 }, (_, i) => `${reg} 안전문${i + 1}팀`),
+      auto: Array.from({ length: 25 }, (_, i) => `${reg} 자동${i + 1}팀`),
+      shelf: Array.from({ length: 25 }, (_, i) => `${reg} 방호선반${i + 1}팀`)
+    };
+  });
+  return teams;
+}
+
+// --- STATE MANAGEMENT ---
+let tasks = [];
+let customHolidays = {}; // 사용자 지정 휴일
+let userPermissions = [];
+let currentUser = null; // { name, phone, approved: boolean }
+let isAdmin = false;
+let db = null;
+let isCloudConnected = false;
+
+let currentDate = new Date();
+let selectedFilter = '전체';
+let selectedRegionFilter = '전체';
+let selectedTeamFilter = '전체';
+let selectedDayString = '';
+let pendingTaskToSave = null;
+let totalEquipmentInventory = 50;
+
+let regionTeamData = generateDefaultTeams();
+
+// --- INITIALIZATION ---
+window.addEventListener('DOMContentLoaded', () => {
+  loadLocalState();
+  initCloudIfConfigured();
+  setupInitialDates();
+  populateFilterDropdowns();
+  renderCalendar();
+  updateQuickStats();
+  renderUtilizationView();
+
+  // Set today as default date for picker
+  const todayStr = new Date().toISOString().split('T')[0];
+  document.getElementById('utilization-date-picker').value = todayStr;
+  document.getElementById('summary-start-date').value = todayStr;
+});
+
+function loadLocalState() {
+  const savedTasks = localStorage.getItem('gukje_tasks');
+  if (savedTasks) {
+    try { tasks = JSON.parse(savedTasks); } catch (e) { tasks = []; }
+  }
+
+  const savedCustomHolidays = localStorage.getItem('gukje_custom_holidays');
+  if (savedCustomHolidays) {
+    try { customHolidays = JSON.parse(savedCustomHolidays); } catch (e) { customHolidays = {}; }
+  }
+
+  const savedTeams = localStorage.getItem('gukje_teams');
+  if (savedTeams) {
+    try { regionTeamData = JSON.parse(savedTeams); } catch (e) {}
+  }
+
+  const savedUser = localStorage.getItem('gukje_current_user');
+  if (savedUser) {
+    try { currentUser = JSON.parse(savedUser); } catch (e) {}
+  }
+
+  const savedAdmin = localStorage.getItem('gukje_is_admin');
+  if (savedAdmin === 'true') {
+    isAdmin = true;
+  }
+
+  const savedInv = localStorage.getItem('gukje_total_inventory');
+  if (savedInv) {
+    totalEquipmentInventory = parseInt(savedInv, 10) || 50;
+  }
+
+  updateAuthUIStatus();
+}
+
+function saveLocalState() {
+  localStorage.setItem('gukje_tasks', JSON.stringify(tasks));
+  localStorage.setItem('gukje_custom_holidays', JSON.stringify(customHolidays));
+  localStorage.setItem('gukje_teams', JSON.stringify(regionTeamData));
+  localStorage.setItem('gukje_total_inventory', totalEquipmentInventory.toString());
+}
+
+// --- CLOUD SYNC (FIREBASE FIRESTORE) ---
+function initCloudIfConfigured() {
+  const cfg = localStorage.getItem('gukje_firebase_config');
+  if (!cfg) return;
+
+  try {
+    const config = JSON.parse(cfg);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(config);
+    }
+    db = firebase.firestore();
+
+    // Anonymous authentication
+    firebase.auth().signInAnonymously().catch(err => console.error("Auth err:", err));
+
+    // Live Snapshot Listener
+    db.collection("tasks").onSnapshot((snapshot) => {
+      const cloudTasks = [];
+      snapshot.forEach((doc) => {
+        cloudTasks.push({ id: doc.id, ...doc.data() });
+      });
+      tasks = cloudTasks;
+      saveLocalState();
+      renderCalendar();
+      updateQuickStats();
+      renderUtilizationView();
+    });
+
+    // Permission Listener
+    db.collection("users").onSnapshot((snapshot) => {
+      userPermissions = [];
+      snapshot.forEach(doc => userPermissions.push({ id: doc.id, ...doc.data() }));
+      updatePendingUserBadge();
+      if (currentUser) {
+        const found = userPermissions.find(u => u.name === currentUser.name && u.phone === currentUser.phone);
+        if (found) {
+          currentUser.approved = found.approved;
+          localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
         }
-    </script>
+      }
+    });
+
+    isCloudConnected = true;
+    document.getElementById('cloud-status-text').innerText = "클라우드 공유 실시간 연결됨";
+    document.getElementById('cloud-sync-indicator').innerText = "ONLINE";
+    document.getElementById('cloud-sync-indicator').className = "text-[9px] bg-emerald-600 px-2 py-0.5 rounded text-white font-mono";
+  } catch (e) {
+    console.error("Cloud init fail:", e);
+  }
+}
+
+function saveCloudTask(taskData) {
+  if (!db || !isCloudConnected) return Promise.resolve();
+  const docRef = taskData.id ? db.collection("tasks").doc(taskData.id) : db.collection("tasks").doc();
+  taskData.id = docRef.id;
+  return docRef.set(taskData, { merge: true });
+}
+
+function deleteCloudTask(id) {
+  if (!db || !isCloudConnected) return Promise.resolve();
+  return db.collection("tasks").doc(id).delete();
+}
+
+// --- PERMISSIONS & AUTHENTICATION ---
+function canEdit() {
+  if (isAdmin) return true;
+  if (currentUser && currentUser.approved) return true;
+  return false;
+}
+
+function updateAuthUIStatus() {
+  const adminBadge = document.getElementById('admin-badge');
+  const userBadge = document.getElementById('user-auth-badge');
+  const adminTools = document.getElementById('admin-active-tools');
+  const loginBtnText = document.getElementById('txt-user-login-btn');
+
+  if (isAdmin) {
+    adminBadge.classList.remove('hidden');
+    adminTools.classList.remove('hidden');
+    document.getElementById('btn-admin-login').classList.add('hidden');
+  } else {
+    adminBadge.classList.add('hidden');
+    adminTools.classList.add('hidden');
+    document.getElementById('btn-admin-login').classList.remove('hidden');
+  }
+
+  if (currentUser) {
+    userBadge.classList.remove('hidden');
+    userBadge.innerText = currentUser.approved ? `${currentUser.name} (승인됨)` : `${currentUser.name} (대기중)`;
+    userBadge.className = currentUser.approved ? 
+      "px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-800 text-emerald-200" :
+      "px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-900 text-sky-200";
+    loginBtnText.innerText = "내정보";
+  } else {
+    userBadge.classList.add('hidden');
+    loginBtnText.innerText = "로그인/가입";
+  }
+}
+
+function openUserAuthModal() {
+  if (currentUser) {
+    document.getElementById('auth-user-name').value = currentUser.name || '';
+    document.getElementById('auth-user-phone').value = currentUser.phone || '';
+    document.getElementById('btn-user-logout').classList.remove('hidden');
+  } else {
+    document.getElementById('auth-user-name').value = '';
+    document.getElementById('auth-user-phone').value = '';
+    document.getElementById('btn-user-logout').classList.add('hidden');
+  }
+  document.getElementById('user-auth-modal').classList.remove('hidden');
+}
+
+function closeUserAuthModal() {
+  document.getElementById('user-auth-modal').classList.add('hidden');
+}
+
+function handleUserAuthSubmit() {
+  const name = document.getElementById('auth-user-name').value.trim();
+  const phone = document.getElementById('auth-user-phone').value.trim();
+
+  if (!name) {
+    alert("성명을 입력해주세요.");
+    return;
+  }
+
+  currentUser = { name, phone, approved: false };
+
+  if (db && isCloudConnected) {
+    const userDocId = `${name}_${phone}`.replace(/[^a-zA-Z0-9_]/g, '');
+    db.collection("users").doc(userDocId).get().then(doc => {
+      if (doc.exists) {
+        currentUser.approved = doc.data().approved || false;
+      } else {
+        db.collection("users").doc(userDocId).set({ name, phone, approved: false, createdAt: new Date() });
+      }
+      localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
+      updateAuthUIStatus();
+      closeUserAuthModal();
+    });
+  } else {
+    localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
+    updateAuthUIStatus();
+    closeUserAuthModal();
+  }
+}
+
+function userLogout() {
+  currentUser = null;
+  localStorage.removeItem('gukje_current_user');
+  updateAuthUIStatus();
+  closeUserAuthModal();
+}
+
+function openAdminLoginModal() {
+  document.getElementById('input-admin-pw').value = '';
+  document.getElementById('admin-login-modal').classList.remove('hidden');
+}
+
+function closeAdminLoginModal() {
+  document.getElementById('admin-login-modal').classList.add('hidden');
+}
+
+function verifyAdminLogin() {
+  const pw = document.getElementById('input-admin-pw').value;
+  if (pw === '1234') { // Default admin password
+    isAdmin = true;
+    localStorage.setItem('gukje_is_admin', 'true');
+    updateAuthUIStatus();
+    closeAdminLoginModal();
+    alert("최고 관리자로 로그인되었습니다.");
+  } else {
+    alert("비밀번호가 일치하지 않습니다.");
+  }
+}
+
+function adminLogout() {
+  isAdmin = false;
+  localStorage.removeItem('gukje_is_admin');
+  updateAuthUIStatus();
+  alert("관리자 로그아웃 되었습니다.");
+}
+
+// --- DROPDOWNS & FILTERING ---
+function populateFilterDropdowns() {
+  const regionSelect = document.getElementById('region-filter-select');
+  const teamSelect = document.getElementById('team-filter-select');
+  const formRegionSelect = document.getElementById('form-region');
+  const summaryRegionSelect = document.getElementById('summary-region-select');
+
+  const regions = Object.keys(regionTeamData);
+
+  regionSelect.innerHTML = `<option value="전체">전체 지역</option>` + regions.map(r => `<option value="${r}">${r}</option>`).join('');
+  formRegionSelect.innerHTML = regions.map(r => `<option value="${r}">${r}</option>`).join('');
+  summaryRegionSelect.innerHTML = `<option value="전체">전체 지역</option>` + regions.map(r => `<option value="${r}">${r}</option>`).join('');
+
+  updateTeamFilterDropdown();
+  if (regions.length > 0) {
+    updateFormTeamDropdowns(regions[0]);
+  }
+}
+
+function updateTeamFilterDropdown() {
+  const teamSelect = document.getElementById('team-filter-select');
+  const selectedRegion = document.getElementById('region-filter-select').value;
+
+  let teamOptions = ['전체'];
+
+  if (selectedRegion === '전체') {
+    Object.keys(regionTeamData).forEach(r => {
+      const data = regionTeamData[r];
+      teamOptions.push(...data.install, ...data.safety, ...data.auto, ...data.shelf);
+    });
+  } else if (regionTeamData[selectedRegion]) {
+    const data = regionTeamData[selectedRegion];
+    teamOptions.push(...data.install, ...data.safety, ...data.auto, ...data.shelf);
+  }
+
+  teamOptions = [...new Set(teamOptions)];
+  teamSelect.innerHTML = teamOptions.map(t => `<option value="${t}">${t === '전체' ? '전체 팀 보기' : t}</option>`).join('');
+}
+
+function updateFormTeamDropdowns(region) {
+  const data = regionTeamData[region] || { install: [], safety: [], auto: [], shelf: [] };
+
+  const buildOpts = (arr) => `<option value="">(선택 안함)</option>` + arr.map(t => `<option value="${t}">${t}</option>`).join('');
+
+  document.getElementById('form-installTeam').innerHTML = buildOpts(data.install);
+  document.getElementById('form-safetyTeam').innerHTML = buildOpts(data.safety);
+  document.getElementById('form-autoTeam').innerHTML = buildOpts(data.auto);
+  document.getElementById('form-shelfTeam').innerHTML = buildOpts(data.shelf);
+}
+
+function setFilter(type) {
+  selectedFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.className = 'filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]';
+  });
+  const activeBtn = document.getElementById(`filter-${type === '전체' ? 'all' : type}`);
+  if (activeBtn) activeBtn.className = 'filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-900 text-white text-[11px]';
+  renderCalendar();
+}
+
+function setRegionFilter(val) {
+  selectedRegionFilter = val;
+  updateTeamFilterDropdown();
+  selectedTeamFilter = '전체';
+  renderCalendar();
+}
+
+function setTeamFilter(val) {
+  selectedTeamFilter = val;
+  renderCalendar();
+}
+
+// --- CALENDAR RENDER ---
+function setupInitialDates() {
+  currentDate = new Date(2026, 7, 1); // August 2026
+}
+
+function prevMonth() {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar();
+}
+
+function todayMonth() {
+  currentDate = new Date();
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  document.getElementById('calendar-month-year').innerText = `${year}년 ${month + 1}월`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const grid = document.getElementById('calendar-grid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'min-h-[64px] bg-slate-50/50 rounded-lg';
+    grid.appendChild(empty);
+  }
+
+  const isFullscreen = document.getElementById('calendar-wrapper').classList.contains('calendar-fullscreen');
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dateObj = new Date(year, month, day);
+    const dayOfWeek = dateObj.getDay(); // 0: Sunday, 6: Saturday
+
+    // Check Holiday Status
+    const holidayName = HOLIDAYS[dateStr] || customHolidays[dateStr];
+    const isHoliday = !!holidayName || dayOfWeek === 0; // Sunday or Designated Holiday
+    const isSaturday = dayOfWeek === 6;
+
+    // Filter matching tasks
+    const dayTasks = tasks.filter(t => {
+      if (t.date !== dateStr) return false;
+      if (selectedFilter !== '전체' && t.workType !== selectedFilter) return false;
+      if (selectedRegionFilter !== '전체' && t.region !== selectedRegionFilter) return false;
+      if (selectedTeamFilter !== '전체') {
+        const matchTeam = [t.installTeam, t.safetyTeam, t.autoTeam, t.shelfTeam].includes(selectedTeamFilter);
+        if (!matchTeam) return false;
+      }
+      return true;
+    });
+
+    const cell = document.createElement('div');
+    cell.className = `p-1 border rounded-lg flex flex-col justify-between cursor-pointer transition hover:border-amber-400 ${isHoliday ? 'bg-red-50/30 border-red-100' : 'bg-white border-slate-100'} min-h-[68px] ${isFullscreen ? 'calendar-cell-fs' : ''}`;
+    cell.onclick = () => openDayDetailSheet(dateStr, dayTasks, holidayName);
+
+    const isToday = new Date().toISOString().split('T')[0] === dateStr;
+
+    // Font Color Logic
+    let textColorClass = "text-slate-700";
+    if (isHoliday) textColorClass = "text-red-600 font-black";
+    else if (isSaturday) textColorClass = "text-blue-600 font-bold";
+
+    const dateNumClass = isToday 
+      ? "bg-amber-400 text-slate-900 rounded-full w-5 h-5 flex items-center justify-center font-black shadow-xs" 
+      : `font-bold ${textColorClass}`;
+
+    let taskBadgesHtml = '';
+
+    // Render Holiday Label Badge if present
+    if (holidayName) {
+      taskBadgesHtml += `<div class="text-[8px] bg-red-100 text-red-700 font-extrabold px-1 py-0.5 rounded border border-red-200 mb-0.5 truncate flex items-center gap-0.5"><i class="fa-solid fa-flag text-[7px]"></i> ${holidayName}</div>`;
+    }
+
+    dayTasks.slice(0, 3).forEach(t => {
+      taskBadgesHtml += `<div class="text-[9px] px-1 py-0.5 rounded border mb-0.5 truncate font-medium type-${t.workType}">${t.siteName} (${t.workType})</div>`;
+    });
+
+    if (dayTasks.length > 3) {
+      taskBadgesHtml += `<div class="text-[8px] text-slate-400 font-bold pl-0.5">+${dayTasks.length - 3}개 더보기</div>`;
+    }
+
+    cell.innerHTML = `
+      <div class="flex justify-between items-center text-[10px]">
+        <span class="${dateNumClass}">${day}</span>
+        ${dayTasks.length > 0 ? `<span class="bg-slate-900 text-amber-400 font-bold px-1 rounded text-[8px]">${dayTasks.length}</span>` : ''}
+      </div>
+      <div class="mt-1 flex-grow overflow-hidden">${taskBadgesHtml}</div>
+    `;
+
+    grid.appendChild(cell);
+  }
+}
+
+function toggleExpandCalendar() {
+  const wrapper = document.getElementById('calendar-wrapper');
+  const icon = document.getElementById('expand-icon');
+  const btnText = document.getElementById('expand-btn-text');
+  const fsAddBtn = document.getElementById('fs-add-btn');
+  const fsCloseBtn = document.getElementById('fs-close-btn');
+
+  if (wrapper.classList.contains('calendar-fullscreen')) {
+    wrapper.classList.remove('calendar-fullscreen');
+    icon.className = 'fa-solid fa-expand text-[10px]';
+    btnText.innerText = '전체화면';
+    fsAddBtn.classList.add('hidden');
+    fsCloseBtn.classList.add('hidden');
+  } else {
+    wrapper.classList.add('calendar-fullscreen');
+    icon.className = 'fa-solid fa-compress text-[10px]';
+    btnText.innerText = '축소';
+    fsAddBtn.classList.remove('hidden');
+    fsCloseBtn.classList.remove('hidden');
+  }
+  renderCalendar();
+}
+
+// --- DAY DETAIL SHEET ---
+function openDayDetailSheet(dateStr, dayTasks, holidayName) {
+  selectedDayString = dateStr;
+  const isCustom = !!customHolidays[dateStr];
+
+  let titleHtml = `${dateStr} 일정`;
+  if (holidayName) {
+    titleHtml += ` <span class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold ml-1">${holidayName}</span>`;
+  }
+
+  document.getElementById('day-detail-title').innerHTML = titleHtml;
+  document.getElementById('day-detail-count').innerText = `총 ${dayTasks.length}개 일정`;
+
+  const container = document.getElementById('day-detail-list');
+
+  let customHolidayBtnHtml = '';
+  if (canEdit()) {
+    if (isCustom) {
+      customHolidayBtnHtml = `<button onclick="removeCustomHoliday('${dateStr}')" class="w-full text-center text-xs py-1.5 bg-red-50 text-red-700 font-bold rounded-lg border border-red-200 mb-2"><i class="fa-solid fa-calendar-xmark"></i> 맞춤 공휴일/휴무 지정 해제</button>`;
+    } else if (!HOLIDAYS[dateStr]) {
+      customHolidayBtnHtml = `<button onclick="addCustomHolidayPrompt('${dateStr}')" class="w-full text-center text-xs py-1.5 bg-amber-50 text-amber-800 font-bold rounded-lg border border-amber-200 mb-2"><i class="fa-solid fa-calendar-plus"></i> 공휴일/휴무일로 지정하기</button>`;
+    }
+  }
+
+  if (dayTasks.length === 0) {
+    container.innerHTML = `
+      ${customHolidayBtnHtml}
+      <div class="text-center py-8 text-slate-400 text-xs font-semibold">등록된 일정이 없습니다.</div>
+    `;
+  } else {
+    container.innerHTML = customHolidayBtnHtml + dayTasks.map(t => `
+      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 hover:border-amber-400 transition cursor-pointer" onclick="openEditTaskModal('${t.id}')">
+        <div class="flex justify-between items-center">
+          <span class="badge-${t.workType} px-2 py-0.5 rounded-md text-[10px] font-extrabold">${t.workType}</span>
+          <span class="font-bold text-slate-800 text-xs">${t.siteName} ${t.workContent ? `(${t.workContent})` : ''}</span>
+          <span class="text-[10px] text-amber-700 font-black bg-amber-100 px-1.5 py-0.5 rounded">${t.quantity || 1}대</span>
+        </div>
+        <div class="text-[10px] text-slate-600 flex flex-wrap gap-x-2 gap-y-0.5">
+          <span><b class="text-slate-800">장비:</b> ${t.equipment || '-'}</span>
+          <span><b class="text-slate-800">마스트:</b> ${t.mastCount ? `${t.mastCount}단 (${t.mastHeight}m)` : '-'}</span>
+        </div>
+        <div class="text-[9.5px] text-slate-500 bg-white p-1.5 rounded-lg border border-slate-100 flex flex-wrap gap-2">
+          ${t.installTeam ? `<span>🔧 ${t.installTeam}</span>` : ''}
+          ${t.safetyTeam ? `<span>🛡️ ${t.safetyTeam}</span>` : ''}
+          ${t.autoTeam ? `<span>⚙️ ${t.autoTeam}</span>` : ''}
+          ${t.shelfTeam ? `<span>🪖 ${t.shelfTeam}</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('day-detail-modal').classList.remove('hidden');
+}
+
+function addCustomHolidayPrompt(dateStr) {
+  const name = prompt("공휴일 또는 휴무일 명칭을 입력하세요 (예: 회사창립기념일, 특별휴무):");
+  if (name && name.trim()) {
+    customHolidays[dateStr] = name.trim();
+    saveLocalState();
+    closeDayDetailModal();
+    renderCalendar();
+  }
+}
+
+function removeCustomHoliday(dateStr) {
+  if (confirm("지정된 맞춤 공휴일/휴무 설정을 해제하시겠습니까?")) {
+    delete customHolidays[dateStr];
+    saveLocalState();
+    closeDayDetailModal();
+    renderCalendar();
+  }
+}
+
+function closeDayDetailModal() {
+  document.getElementById('day-detail-modal').classList.add('hidden');
+}
+
+function addNewTaskForCurrentDay() {
+  closeDayDetailModal();
+  openAddTaskModal(selectedDayString);
+}
+
+// --- TASK MODAL & CALCULATIONS ---
+function handleAddTaskClick() {
+  if (!canEdit()) {
+    alert("일정 등록 권한이 없습니다. 로그인 후 관리자 승인을 요청하세요.");
+    return;
+  }
+  openAddTaskModal();
+}
+
+function openAddTaskModal(defaultDate = '') {
+  document.getElementById('modal-title').innerText = "작업 일정 등록";
+  document.getElementById('task-id').value = '';
+  document.getElementById('form-date').value = defaultDate || new Date().toISOString().split('T')[0];
+  document.getElementById('form-workType').value = '설치';
+  document.getElementById('form-siteName').value = '';
+  document.getElementById('form-workContent').value = '';
+  document.getElementById('form-quantity').value = '1';
+  document.getElementById('form-equipment').value = '';
+  document.getElementById('form-mastCount').value = '';
+  document.getElementById('form-mastHeight').value = '';
+  document.getElementById('form-notes').value = '';
+  document.getElementById('btn-delete').classList.add('hidden');
+
+  const regions = Object.keys(regionTeamData);
+  if (regions.length > 0) {
+    document.getElementById('form-region').value = regions[0];
+    updateFormTeamDropdowns(regions[0]);
+  }
+
+  document.getElementById('task-modal').classList.remove('hidden');
+}
+
+function openEditTaskModal(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
+  closeDayDetailModal();
+
+  document.getElementById('modal-title').innerText = "작업 일정 수정";
+  document.getElementById('task-id').value = task.id;
+  document.getElementById('form-date').value = task.date;
+  document.getElementById('form-workType').value = task.workType;
+  document.getElementById('form-siteName').value = task.siteName;
+  document.getElementById('form-workContent').value = task.workContent || '';
+  document.getElementById('form-quantity').value = task.quantity || 1;
+  document.getElementById('form-equipment').value = task.equipment || '';
+  document.getElementById('form-mastCount').value = task.mastCount || '';
+  document.getElementById('form-mastHeight').value = task.mastHeight || '';
+  document.getElementById('form-notes').value = task.notes || '';
+
+  const region = task.region || Object.keys(regionTeamData)[0];
+  document.getElementById('form-region').value = region;
+  updateFormTeamDropdowns(region);
+
+  document.getElementById('form-installTeam').value = task.installTeam || '';
+  document.getElementById('form-safetyTeam').value = task.safetyTeam || '';
+  document.getElementById('form-autoTeam').value = task.autoTeam || '';
+  document.getElementById('form-shelfTeam').value = task.shelfTeam || '';
+
+  if (canEdit()) {
+    document.getElementById('btn-delete').classList.remove('hidden');
+  } else {
+    document.getElementById('btn-delete').classList.add('hidden');
+  }
+
+  document.getElementById('task-modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('task-modal').classList.add('hidden');
+}
+
+function calculateHeight() {
+  const count = parseFloat(document.getElementById('form-mastCount').value) || 0;
+  if (count > 0) {
+    const totalMeters = (count * MAST_HEIGHT_MM) / 1000;
+    document.getElementById('form-mastHeight').value = totalMeters.toFixed(2);
+  } else {
+    document.getElementById('form-mastHeight').value = '';
+  }
+}
+
+function saveTaskFromModal() {
+  if (!canEdit()) {
+    alert("권한이 없습니다.");
+    return;
+  }
+
+  const id = document.getElementById('task-id').value;
+  const date = document.getElementById('form-date').value;
+  const workType = document.getElementById('form-workType').value;
+  const region = document.getElementById('form-region').value;
+  const siteName = document.getElementById('form-siteName').value.trim();
+  const workContent = document.getElementById('form-workContent').value.trim();
+  const quantity = parseInt(document.getElementById('form-quantity').value, 10) || 1;
+  const equipment = document.getElementById('form-equipment').value.trim();
+  const installTeam = document.getElementById('form-installTeam').value;
+  const safetyTeam = document.getElementById('form-safetyTeam').value;
+  const autoTeam = document.getElementById('form-autoTeam').value;
+  const shelfTeam = document.getElementById('form-shelfTeam').value;
+  const mastCount = document.getElementById('form-mastCount').value;
+  const mastHeight = document.getElementById('form-mastHeight').value;
+  const notes = document.getElementById('form-notes').value.trim();
+
+  if (!date || !siteName) {
+    alert("작업 일자와 현장명은 필수 입력 항목입니다.");
+    return;
+  }
+
+  const taskData = {
+    id: id || 'loc_' + Date.now() + Math.random().toString(36).substr(2, 4),
+    date, workType, region, siteName, workContent, quantity, equipment,
+    installTeam, safetyTeam, autoTeam, shelfTeam, mastCount, mastHeight, notes,
+    updatedAt: new Date().toISOString()
+  };
+
+  // Check team duplicate on same day
+  const assignedTeams = [installTeam, safetyTeam, autoTeam, shelfTeam].filter(Boolean);
+  const duplicates = tasks.filter(t => t.id !== taskData.id && t.date === date && [t.installTeam, t.safetyTeam, t.autoTeam, t.shelfTeam].some(tm => tm && assignedTeams.includes(tm)));
+
+  if (duplicates.length > 0) {
+    pendingTaskToSave = taskData;
+    document.getElementById('duplicate-warning-msg').innerText = `${date} 일자에 동일한 팀의 배정이 이미 존재합니다.`;
+    document.getElementById('duplicate-details-list').innerHTML = duplicates.map(d => `• ${d.siteName} (${d.workType})`).join('<br>');
+    document.getElementById('duplicate-warning-modal').classList.remove('hidden');
+    return;
+  }
+
+  executeTaskSave(taskData);
+}
+
+function confirmSaveTaskAnyway() {
+  if (pendingTaskToSave) {
+    executeTaskSave(pendingTaskToSave);
+    pendingTaskToSave = null;
+    closeDuplicateWarningModal();
+  }
+}
+
+function closeDuplicateWarningModal() {
+  document.getElementById('duplicate-warning-modal').classList.add('hidden');
+}
+
+function executeTaskSave(taskData) {
+  const existingIndex = tasks.findIndex(t => t.id === taskData.id);
+  if (existingIndex >= 0) {
+    tasks[existingIndex] = taskData;
+  } else {
+    tasks.push(taskData);
+  }
+
+  saveLocalState();
+  saveCloudTask(taskData);
+
+  closeModal();
+  renderCalendar();
+  updateQuickStats();
+  renderUtilizationView();
+}
+
+function deleteCurrentTask() {
+  const id = document.getElementById('task-id').value;
+  if (!id) return;
+
+  if (confirm("정말 이 일정을 삭제하시겠습니까?")) {
+    tasks = tasks.filter(t => t.id !== id);
+    saveLocalState();
+    deleteCloudTask(id);
+
+    closeModal();
+    renderCalendar();
+    updateQuickStats();
+    renderUtilizationView();
+  }
+}
+
+// --- KAKAOTALK PARSER ---
+function insertSampleChat() {
+  document.getElementById('chat-input').value = 
+`[수도권] 8/25 현대반포 102동 설치 2대 장비:1535S 마스트 3단 (설치1팀, 안전문2팀)
+8/26 롯데잠실 해체 1대 장비:1840S (설치3팀)`;
+}
+
+function extractTasksFromChat() {
+  const text = document.getElementById('chat-input').value.trim();
+  if (!text) {
+    alert("카톡 메시지를 입력해주세요.");
+    return;
+  }
+
+  const lines = text.split('\n');
+  const parsed = [];
+  const year = currentDate.getFullYear();
+
+  lines.forEach(line => {
+    if (!line.trim()) return;
+
+    // Regex parsing heuristics
+    const dateMatch = line.match(/(\d{1,2})\/(\d{1,2})/);
+    const date = dateMatch ? `${year}-${String(dateMatch[1]).padStart(2, '0')}-${String(dateMatch[2]).padStart(2, '0')}` : new Date().toISOString().split('T')[0];
+
+    let workType = '설치';
+    if (line.includes('해체')) workType = '해체';
+    else if (line.includes('인상')) workType = '인상';
+
+    const qtyMatch = line.match(/(\d+)대/);
+    const quantity = qtyMatch ? parseInt(qtyMatch[1], 10) : 1;
+
+    const eqMatch = line.match(/장비\s*:\s*([A-Za-z0-9]+)/) || line.match(/([0-9]{4}[A-Z]{1,2})/);
+    const equipment = eqMatch ? eqMatch[1] : '';
+
+    const mastMatch = line.match(/마스트\s*(\d+)단/);
+    const mastCount = mastMatch ? mastMatch[1] : '';
+    const mastHeight = mastCount ? ((parseInt(mastCount, 10) * MAST_HEIGHT_MM) / 1000).toFixed(2) : '';
+
+    // Region search
+    let region = Object.keys(regionTeamData)[0];
+    Object.keys(regionTeamData).forEach(r => {
+      if (line.includes(r)) region = r;
+    });
+
+    // Site name heuristics
+    let siteName = '현장';
+    const siteTokens = line.replace(/\[.*?\]/g, '').split(/\s+/);
+    for (let tok of siteTokens) {
+      if (!tok.includes('/') && !tok.includes('설치') && !tok.includes('해체') && !tok.includes('인상') && tok.length > 1) {
+        siteName = tok;
+        break;
+      }
+    }
+
+    parsed.push({
+      id: 'parsed_' + Date.now() + Math.random().toString(36).substr(2, 4),
+      date, workType, region, siteName, workContent: '', quantity, equipment,
+      installTeam: '', safetyTeam: '', autoTeam: '', shelfTeam: '', mastCount, mastHeight, notes: '카톡 자동추출'
+    });
+  });
+
+  renderParsedResults(parsed);
+}
+
+function renderParsedResults(parsedTasks) {
+  document.getElementById('parsed-count').innerText = parsedTasks.length;
+  const list = document.getElementById('parsed-list');
+
+  list.innerHTML = parsedTasks.map((t, idx) => `
+    <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-xs">
+      <div class="flex justify-between items-center">
+        <span class="font-bold text-slate-800">${t.date} | ${t.siteName}</span>
+        <span class="badge-${t.workType} px-1.5 py-0.5 rounded text-[10px] font-bold">${t.workType} ${t.quantity}대</span>
+      </div>
+      <div class="text-[10px] text-slate-500">
+        권역: ${t.region} | 장비: ${t.equipment || '-'} | 마스트: ${t.mastCount ? `${t.mastCount}단` : '-'}
+      </div>
+    </div>
+  `).join('');
+
+  window.lastParsedTasks = parsedTasks;
+  document.getElementById('parsed-results-container').classList.remove('hidden');
+}
+
+function saveAllParsedTasks() {
+  if (!canEdit()) {
+    alert("권한이 없습니다.");
+    return;
+  }
+
+  if (window.lastParsedTasks && window.lastParsedTasks.length > 0) {
+    tasks.push(...window.lastParsedTasks);
+    saveLocalState();
+    window.lastParsedTasks.forEach(t => saveCloudTask(t));
+
+    alert(`${window.lastParsedTasks.length}건의 일정이 저장되었습니다.`);
+    document.getElementById('parsed-results-container').classList.add('hidden');
+    document.getElementById('chat-input').value = '';
+    renderCalendar();
+    updateQuickStats();
+    renderUtilizationView();
+    switchTab('calendar');
+  }
+}
+
+// --- EQUIPMENT UTILIZATION ANALYSIS ---
+function renderUtilizationView() {
+  const targetDate = document.getElementById('utilization-date-picker').value || new Date().toISOString().split('T')[0];
+
+  // Calculate active equipment up to target date
+  const siteMap = {};
+  let totalActive = 0;
+
+  tasks.filter(t => t.date <= targetDate).forEach(t => {
+    if (!siteMap[t.siteName]) {
+      siteMap[t.siteName] = { install: 0, dismantle: 0, current: 0 };
+    }
+    const qty = parseInt(t.quantity, 10) || 1;
+    if (t.workType === '설치') {
+      siteMap[t.siteName].install += qty;
+      siteMap[t.siteName].current += qty;
+    } else if (t.workType === '해체') {
+      siteMap[t.siteName].dismantle += qty;
+      siteMap[t.siteName].current -= qty;
+    }
+  });
+
+  Object.values(siteMap).forEach(s => {
+    if (s.current < 0) s.current = 0;
+    totalActive += s.current;
+  });
+
+  const idle = Math.max(0, totalEquipmentInventory - totalActive);
+  const rate = totalEquipmentInventory > 0 ? Math.round((totalActive / totalEquipmentInventory) * 100) : 0;
+
+  document.getElementById('stat-total-inventory').innerText = `${totalEquipmentInventory}대`;
+  document.getElementById('stat-active-equipment').innerText = `${totalActive}대`;
+  document.getElementById('stat-idle-equipment').innerText = `${idle}대`;
+  document.getElementById('utilization-rate-badge').innerText = `${rate}%`;
+  document.getElementById('utilization-progress-bar').style.width = `${Math.min(100, rate)}%`;
+
+  const sites = Object.keys(siteMap).filter(k => siteMap[k].current > 0);
+  document.getElementById('utilization-site-count').innerText = `${sites.length}개 Active 현장`;
+
+  const listContainer = document.getElementById('utilization-site-list');
+  if (sites.length === 0) {
+    listContainer.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold">기준일 가동 중인 현장이 없습니다.</div>`;
+  } else {
+    listContainer.innerHTML = sites.map(site => `
+      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
+        <div>
+          <span class="font-extrabold text-slate-800 block">${site}</span>
+          <span class="text-[10px] text-slate-500">누적설치: ${siteMap[site].install}대 | 누적해체: ${siteMap[site].dismantle}대</span>
+        </div>
+        <span class="font-black text-amber-700 bg-amber-100 px-2 py-1 rounded-lg text-xs">${siteMap[site].current}대 가동 중</span>
+      </div>
+    `).join('');
+  }
+}
+
+function openTotalInventoryModal() {
+  document.getElementById('input-total-inventory').value = totalEquipmentInventory;
+  document.getElementById('total-inventory-modal').classList.remove('hidden');
+}
+
+function closeTotalInventoryModal() {
+  document.getElementById('total-inventory-modal').classList.add('hidden');
+}
+
+function saveTotalInventory() {
+  const val = parseInt(document.getElementById('input-total-inventory').value, 10);
+  if (val && val > 0) {
+    totalEquipmentInventory = val;
+    saveLocalState();
+    renderUtilizationView();
+    closeTotalInventoryModal();
+  }
+}
+
+// --- WEEKLY SUMMARY & KAKAO EXPORT ---
+function updateSummaryTeamOptions(region) {
+  const select = document.getElementById('summary-team-select');
+  let teams = ['전체'];
+
+  if (region === '전체') {
+    Object.keys(regionTeamData).forEach(r => {
+      const data = regionTeamData[r];
+      teams.push(...data.install, ...data.safety, ...data.auto, ...data.shelf);
+    });
+  } else if (regionTeamData[region]) {
+    const data = regionTeamData[region];
+    teams.push(...data.install, ...data.safety, ...data.auto, ...data.shelf);
+  }
+
+  teams = [...new Set(teams)];
+  select.innerHTML = teams.map(t => `<option value="${t}">${t === '전체' ? '전체 팀 일정' : t}</option>`).join('');
+}
+
+function generateWeeklySummaryText() {
+  const startDateStr = document.getElementById('summary-start-date').value;
+  const region = document.getElementById('summary-region-select').value;
+  const team = document.getElementById('summary-team-select').value;
+
+  if (!startDateStr) return;
+
+  const start = new Date(startDateStr);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6); // 7 days week
+
+  const endStr = end.toISOString().split('T')[0];
+
+  const weekTasks = tasks.filter(t => {
+    if (t.date < startDateStr || t.date > endStr) return false;
+    if (region !== '전체' && t.region !== region) return false;
+    if (team !== '전체') {
+      if (![t.installTeam, t.safetyTeam, t.autoTeam, t.shelfTeam].includes(team)) return false;
+    }
+    return true;
+  });
+
+  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+  let text = `📢 [국제산업렌탈] 주간 작업 일정 요약\n`;
+  text += `🗓️ 기간: ${startDateStr} ~ ${endStr}\n`;
+  text += `📍 대상: ${region} / ${team}\n`;
+  text += `-----------------------------------\n\n`;
+
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dStr = d.toISOString().split('T')[0];
+    const dayLabel = dayNames[d.getDay()];
+    const dTasks = weekTasks.filter(t => t.date === dStr);
+
+    // Check Holiday
+    const holidayName = HOLIDAYS[dStr] || customHolidays[dStr];
+    const holidayTag = holidayName ? ` [${holidayName}]` : '';
+
+    text += `■ ${dStr} (${dayLabel})${holidayTag}\n`;
+    if (dTasks.length === 0) {
+      text += `  - 작업 일정 없음\n`;
+    } else {
+      dTasks.forEach(t => {
+        text += `  • [${t.workType}] ${t.siteName} ${t.workContent ? `(${t.workContent})` : ''} - ${t.quantity}대 (${t.equipment || '장비미지정'})\n`;
+      });
+    }
+    text += `\n`;
+  }
+
+  document.getElementById('summary-output').value = text;
+}
+
+function copySummaryToClipboard() {
+  const area = document.getElementById('summary-output');
+  area.select();
+  document.execCommand('copy');
+  alert("카톡 요약 내용이 클립보드에 복사되었습니다.");
+}
+
+// --- EXCEL EXPORT ---
+function exportTasksToExcel() {
+  if (tasks.length === 0) {
+    alert("내보낼 일정 데이터가 없습니다.");
+    return;
+  }
+
+  const exportData = tasks.map(t => ({
+    '일자': t.date,
+    '공휴일여부': HOLIDAYS[t.date] || customHolidays[t.date] || '',
+    '구분': t.workType,
+    '권역': t.region,
+    '현장명': t.siteName,
+    '작업내용': t.workContent,
+    '수량': t.quantity,
+    '장비명': t.equipment,
+    '설치팀': t.installTeam,
+    '안전문팀': t.safetyTeam,
+    '자동팀': t.autoTeam,
+    '방호선반팀': t.shelfTeam,
+    '마스트단수': t.mastCount,
+    '마스트높이(m)': t.mastHeight,
+    '메모': t.notes
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "작업일정");
+  XLSX.writeFile(workbook, `국제산업렌탈_작업일정_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// --- STATS UPDATE ---
+function updateQuickStats() {
+  const total = tasks.length;
+  const install = tasks.filter(t => t.workType === '설치').length;
+  const dismantle = tasks.filter(t => t.workType === '해체').length;
+  const jacking = tasks.filter(t => t.workType === '인상').length;
+
+  document.getElementById('stat-total').innerText = total;
+  document.getElementById('stat-install').innerText = install;
+  document.getElementById('stat-dismantle').innerText = dismantle;
+  document.getElementById('stat-jacking').innerText = jacking;
+}
+
+// --- ADMIN MANAGEMENT MODALS ---
+function openTeamRegionManageModal() {
+  if (!isAdmin) return;
+  const select = document.getElementById('admin-manage-region-select');
+  const regions = Object.keys(regionTeamData);
+  select.innerHTML = regions.map(r => `<option value="${r}">${r}</option>`).join('');
+  if (regions.length > 0) renderTeamManageList(regions[0]);
+  document.getElementById('team-region-modal').classList.remove('hidden');
+}
+
+function closeTeamRegionManageModal() {
+  document.getElementById('team-region-modal').classList.add('hidden');
+}
+
+function renderTeamManageList(region) {
+  document.getElementById('admin-edit-region-name').value = region;
+  const data = regionTeamData[region] || { install: [], safety: [], auto: [], shelf: [] };
+
+  const container = document.getElementById('admin-team-list-container');
+  container.innerHTML = `
+    <div class="space-y-3">
+      <div>
+        <h4 class="font-bold text-sky-800 text-xs mb-1">설치팀 목록 (25개팀)</h4>
+        <textarea id="edit-install-teams" rows="3" class="w-full border p-1.5 rounded text-xs font-mono">${data.install.join(', ')}</textarea>
+      </div>
+      <div>
+        <h4 class="font-bold text-amber-800 text-xs mb-1">안전문팀 목록 (25개팀)</h4>
+        <textarea id="edit-safety-teams" rows="3" class="w-full border p-1.5 rounded text-xs font-mono">${data.safety.join(', ')}</textarea>
+      </div>
+      <div>
+        <h4 class="font-bold text-indigo-800 text-xs mb-1">자동팀 목록 (25개팀)</h4>
+        <textarea id="edit-auto-teams" rows="3" class="w-full border p-1.5 rounded text-xs font-mono">${data.auto.join(', ')}</textarea>
+      </div>
+      <div>
+        <h4 class="font-bold text-emerald-800 text-xs mb-1">방호선반팀 목록 (25개팀)</h4>
+        <textarea id="edit-shelf-teams" rows="3" class="w-full border p-1.5 rounded text-xs font-mono">${data.shelf.join(', ')}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function saveTeamRegionChanges() {
+  const currentRegion = document.getElementById('admin-manage-region-select').value;
+  if (!currentRegion) return;
+
+  const parseArr = id => document.getElementById(id).value.split(',').map(s => s.trim()).filter(Boolean);
+
+  regionTeamData[currentRegion] = {
+    install: parseArr('edit-install-teams'),
+    safety: parseArr('edit-safety-teams'),
+    auto: parseArr('edit-auto-teams'),
+    shelf: parseArr('edit-shelf-teams')
+  };
+
+  saveLocalState();
+  populateFilterDropdowns();
+  closeTeamRegionManageModal();
+  alert("팀 변경사항이 저장되었습니다.");
+}
+
+function addNewRegionPrompt() {
+  const name = prompt("새로 추가할 권역명을 입력하세요:");
+  if (name && !regionTeamData[name]) {
+    regionTeamData[name] = {
+      install: Array.from({ length: 25 }, (_, i) => `${name} 설치${i + 1}팀`),
+      safety: Array.from({ length: 25 }, (_, i) => `${name} 안전문${i + 1}팀`),
+      auto: Array.from({ length: 25 }, (_, i) => `${name} 자동${i + 1}팀`),
+      shelf: Array.from({ length: 25 }, (_, i) => `${name} 방호선반${i + 1}팀`)
+    };
+    saveLocalState();
+    populateFilterDropdowns();
+    openTeamRegionManageModal();
+  }
+}
+
+function renameCurrentRegion() {
+  const current = document.getElementById('admin-manage-region-select').value;
+  const newName = document.getElementById('admin-edit-region-name').value.trim();
+  if (newName && newName !== current) {
+    regionTeamData[newName] = regionTeamData[current];
+    delete regionTeamData[current];
+    saveLocalState();
+    populateFilterDropdowns();
+    openTeamRegionManageModal();
+  }
+}
+
+function deleteCurrentRegion() {
+  const current = document.getElementById('admin-manage-region-select').value;
+  if (confirm(`'${current}' 권역을 삭제하시겠습니까?`)) {
+    delete regionTeamData[current];
+    saveLocalState();
+    populateFilterDropdowns();
+    openTeamRegionManageModal();
+  }
+}
+
+function resetTeamsToDefault() {
+  if (confirm("팀 목록을 초기 기본 25개팀 설정으로 초기화하시겠습니까?")) {
+    regionTeamData = generateDefaultTeams();
+    saveLocalState();
+    populateFilterDropdowns();
+    openTeamRegionManageModal();
+  }
+}
+
+function openCloudConfigModal() {
+  const cfg = localStorage.getItem('gukje_firebase_config');
+  if (cfg) {
+    try {
+      const parsed = JSON.parse(cfg);
+      document.getElementById('cfg-apiKey').value = parsed.apiKey || '';
+      document.getElementById('cfg-projectId').value = parsed.projectId || '';
+      document.getElementById('cfg-appId').value = parsed.appId || '';
+    } catch (e) {}
+  }
+  document.getElementById('cloud-config-modal').classList.remove('hidden');
+}
+
+function closeCloudConfigModal() {
+  document.getElementById('cloud-config-modal').classList.add('hidden');
+}
+
+function saveCloudConfig() {
+  const apiKey = document.getElementById('cfg-apiKey').value.trim();
+  const projectId = document.getElementById('cfg-projectId').value.trim();
+  const appId = document.getElementById('cfg-appId').value.trim();
+
+  if (!apiKey || !projectId) {
+    alert("API Key와 Project ID는 필수입니다.");
+    return;
+  }
+
+  const config = { apiKey, projectId, appId, authDomain: `${projectId}.firebaseapp.com` };
+  localStorage.setItem('gukje_firebase_config', JSON.stringify(config));
+  closeCloudConfigModal();
+  location.reload();
+}
+
+function disconnectCloud() {
+  localStorage.removeItem('gukje_firebase_config');
+  closeCloudConfigModal();
+  location.reload();
+}
+
+function openUserPermissionManageModal() {
+  renderUserPermissionList();
+  document.getElementById('user-perm-modal').classList.remove('hidden');
+}
+
+function closeUserPermissionManageModal() {
+  document.getElementById('user-perm-modal').classList.add('hidden');
+}
+
+function renderUserPermissionList() {
+  const list = document.getElementById('user-perm-list');
+  if (userPermissions.length === 0) {
+    list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">등록된 회원이 없습니다 (클라우드 연동 필요).</div>`;
+  } else {
+    list.innerHTML = userPermissions.map(u => `
+      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
+        <div>
+          <span class="font-extrabold text-slate-800 block">${u.name}</span>
+          <span class="text-[10px] text-slate-500 font-mono">${u.phone || '전화번호 미입력'}</span>
+        </div>
+        <button onclick="toggleUserApproval('${u.id}', ${!u.approved})" class="px-3 py-1.5 rounded-lg text-xs font-bold ${u.approved ? 'bg-emerald-600 text-white' : 'bg-slate-300 text-slate-700'}">
+          ${u.approved ? '승인됨 (수정 가능)' : '승인 대기'}
+        </button>
+      </div>
+    `).join('');
+  }
+}
+
+function toggleUserApproval(userId, newApproved) {
+  if (db && isCloudConnected) {
+    db.collection("users").doc(userId).update({ approved: newApproved }).then(() => {
+      renderUserPermissionList();
+    });
+  }
+}
+
+function updatePendingUserBadge() {
+  const pending = userPermissions.filter(u => !u.approved).length;
+  const badge = document.getElementById('pending-users-count-badge');
+  if (pending > 0) {
+    badge.innerText = pending;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+// --- TAB SWITCHING ---
+function switchTab(tabName) {
+  ['calendar', 'extractor', 'utilization', 'summary'].forEach(t => {
+    document.getElementById(`view-${t}`).classList.add('hidden');
+    const navBtn = document.getElementById(`nav-${t}`);
+    navBtn.className = "flex flex-col items-center justify-center py-1 text-slate-400 font-medium";
+  });
+
+  document.getElementById(`view-${tabName}`).classList.remove('hidden');
+  const activeNav = document.getElementById(`nav-${tabName}`);
+  activeNav.className = "flex flex-col items-center justify-center py-1 text-amber-600 font-bold";
+
+  if (tabName === 'utilization') {
+    renderUtilizationView();
+  } else if (tabName === 'summary') {
+    updateSummaryTeamOptions(document.getElementById('summary-region-select').value);
+    generateWeeklySummaryText();
+  }
+}
+</script>
 </body>
 </html>
