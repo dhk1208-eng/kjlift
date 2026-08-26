@@ -764,17 +764,6 @@ body {
 
 <!-- App Logic Script -->
 <script>
-/*****Supabase ***************************/
-const SUPABASE_URL = 'https://qzjreahrkwlaztuemhlj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6anJlYWhya3dsYXp0dWVtaGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTAzOTYsImV4cCI6MjEwMzI2NjM5Nn0.1l50lQ93Sh6JpWWnFN3ICHwVwvBPhTfFfPe2WWstzwY';
-
-try {
-  const { createClient } = supabase;
-  supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch (error) {
-  console.error('Supabase 초기화 실패:', error);
-}
-/*****Supabase ***************************/	
 	
 // --- CONSTANTS & MAST CONFIGURATION ---
 const MAST_HEIGHT_MM = 1508; // User preferred mast unit height: 1,508 mm
@@ -867,13 +856,22 @@ let isAdmin = false;
 
 /*****Supabase ***************************/
 let supabaseClient = null;
+let isCloudConnected = false;
 let realtimeChannel = null;
+let db = null;
 /*****Supabase ***************************/
 
-/*****************************************
-let db = null;
-let isCloudConnected = false;
-******************************************/
+/*****Supabase ***************************/
+const SUPABASE_URL = 'https://qzjreahrkwlaztuemhlj.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6anJlYWhya3dsYXp0dWVtaGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTAzOTYsImV4cCI6MjEwMzI2NjM5Nn0.1l50lQ93Sh6JpWWnFN3ICHwVwvBPhTfFfPe2WWstzwY';
+
+try {
+  const { createClient } = supabase;
+  supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (error) {
+  console.error('Supabase 초기화 실패:', error);
+}
+/*****Supabase ***************************/	
 
 let currentDate = new Date();
 let selectedFilter = '전체';
