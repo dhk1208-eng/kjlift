@@ -1,1 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>내 첫 번째 웹 프로그램</title>
+    <!-- Supabase 자바스크립트 라이브러리 불러오기 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        input { padding: 10px; width: 300px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
 
+    <h1>방명록 남기기</h1>
+    <p>여러분이 입력한 데이터가 Supabase DB에 안전하게 저장됩니다!</p>
+
+    <!-- 입력 폼 -->
+    <input type="text" id="userInput" placeholder="내용을 입력하세요...">
+    <button onclick="saveData()">저장하기</button>
+
+    <script>
+        // 1. Supabase 연결 설정 (본인 정보로 수정)
+        const SUPABASE_URL = 'sb_publishable_Y_KwkzCYEd4r6DPYYR0B0g_kXDzSoNq';
+        const SUPABASE_ANON_KEY = 'sb_secret_qv2zGxjWl-mhjMVfESYSJA_g8TxcCl3';
+        
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 2. 저장하기 버튼을 눌렀을 때 실행되는 함수
+        async function saveData() {
+            const textValue = document.getElementById('userInput').value;
+            
+            if (!textValue) {
+                alert('내용을 입력해주세요!');
+                return;
+            }
+
+            // Supabase의 'messages' 테이블에 데이터 넣기
+            const { data, error } = await _supabase
+                .from('messages')
+                .insert([{ content: textValue }]);
+
+            if (error) {
+                console.error('저장 에러:', error);
+                alert('저장에 실패했습니다.');
+            } else {
+                alert('성공적으로 저장되었습니다!');
+                document.getElementById('userInput').value = ''; // 입력창 비우기
+            }
+        }
+    </script>
+</body>
+</html>
