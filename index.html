@@ -757,14 +757,13 @@ body {
     </div>
     <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-1.5">
       <button onclick="closeDuplicateWarningModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
-      <button onclick="confirmSaveTaskAnyway()" class="px-4 py-1.5 text-xs bg-red-600 text-white font-bold rounded-lg shadow-xs">강제 저장</button>
+      <button onclicklet tasks="confirmSaveTaskAnyway()" class="px-4 py-1.5 text-xs bg-red-600 text-white font-bold rounded-lg shadow-xs">강제 저장</button>
     </div>
   </div>
 </div>
 
 <!-- App Logic Script -->
 <script>
-	
 /*****Supabase ***************************/
 const SUPABASE_URL = 'https://qzjreahrkwlaztuemhlj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6anJlYWhya3dsYXp0dWVtaGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTAzOTYsImV4cCI6MjEwMzI2NjM5Nn0.1l50lQ93Sh6JpWWnFN3ICHwVwvBPhTfFfPe2WWstzwY';
@@ -866,17 +865,15 @@ let userPermissions = [];
 let currentUser = null; // { name, phone, approved: boolean }
 let isAdmin = false;
 
+/*****Supabase ***************************/
+let supabaseClient = null;
+let realtimeChannel = null;
+/*****Supabase ***************************/
+
 /*****************************************
 let db = null;
 let isCloudConnected = false;
 ******************************************/
-
-/*****Supabase ***************************
-let supabaseClient = null;
-let isCloudConnected = false;
-let realtimeChannel = null;
-*****Supabase ***************************/
-
 
 let currentDate = new Date();
 let selectedFilter = '전체';
