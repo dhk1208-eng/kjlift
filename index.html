@@ -1235,8 +1235,18 @@ function saveLocalState() {
   localStorage.setItem('gukje_total_inventory', totalEquipmentInventory.toString());
 }
 
+//function toNullableInteger(value) {
+//  // 빈 값은 DB의 NULL로 저장
+//  if (value === null || value === undefined || value === '') {
+//    return null;
+//  }
+//
+//  const numberValue = Number(value);
+//
+//  return Number.isInteger(numberValue) ? numberValue : null;
+//}
+  
 function toNullableInteger(value) {
-  // 빈 값은 DB의 NULL로 저장
   if (value === null || value === undefined || value === '') {
     return null;
   }
@@ -1246,6 +1256,33 @@ function toNullableInteger(value) {
   return Number.isInteger(numberValue) ? numberValue : null;
 }
 
+function toNullableNumber(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function prepareTaskForSupabase(task) {
+  return {
+    // 중요: 점 3개(...)를 반드시 넣어야 합니다.
+    ...task,
+
+    // 수량은 숫자 형태로 저장
+    quantity: toNullableInteger(task.quantity) ?? 1,
+
+    // 마스트 미입력 시 ''가 아닌 null로 저장
+    mastCount: toNullableInteger(task.mastCount),
+    mastHeight: toNullableNumber(task.mastHeight),
+
+    updatedAt: task.updatedAt || new Date().toISOString()
+  };
+}
+
+  
 function toNullableNumber(value) {
   // 빈 값은 DB의 NULL로 저장
   if (value === null || value === undefined || value === '') {
@@ -1384,15 +1421,38 @@ function subscribeToRealtimeChanges() {
     .subscribe();
 }
 
+//async function saveCloudTask(taskData) {
+//  if (!supabaseClient || !isCloudConnected) {
+//    return { data: null, error: null };
+//  }
+//
+//  const payload = prepareTaskForSupabase(taskData);
+//  const { data, error } = await supabaseClient
+//    .from('tasks')
+//    .upsert(taskData, { onConflict: 'id' })
+//    .select()
+//    .single();
+//
+//  if (error) {
+//    console.error('Supabase 일정 저장 실패:', error);
+//    throw error;
+//  }
+//
+//  return { data, error: null };
+//}
+
 async function saveCloudTask(taskData) {
   if (!supabaseClient || !isCloudConnected) {
     return { data: null, error: null };
   }
 
+  // 빈 마스트 입력값을 null로 변환
   const payload = prepareTaskForSupabase(taskData);
+
+  // 중요: taskData가 아니라 payload를 저장해야 합니다.
   const { data, error } = await supabaseClient
     .from('tasks')
-    .upsert(taskData, { onConflict: 'id' })
+    .upsert(payload, { onConflict: 'id' })
     .select()
     .single();
 
@@ -1403,6 +1463,7 @@ async function saveCloudTask(taskData) {
 
   return { data, error: null };
 }
+
 
 async function deleteCloudTask(id) {
   if (!supabaseClient || !isCloudConnected) {
@@ -1978,7 +2039,13 @@ function saveTaskFromModal() {
   const taskData = {
     id: id || 'loc_' + Date.now() + Math.random().toString(36).substr(2, 4),
     date, workType, region, siteName, workContent, quantity, equipment,
-    installTeam, safetyTeam, autoTeam, shelfTeam, mastCount, mastHeight, notes,
+    installTeam, safetyTeam, autoTeam, shelfTeam, 
+    
+//    mastCount, mastHeight, 
+		mastCount: mastCount === '' ? null : Number(mastCount),
+		mastHeight: mastHeight === '' ? null : Number(mastHeight),
+    
+    notes,
     updatedAt: new Date().toISOString()
   };
 
@@ -2209,7 +2276,8 @@ async function saveAllParsedTasks() {
       if (error) throw error;
     }
 
-    tasks.push(...window.lastParsedTasks);
+//    tasks.push(...window.lastParsedTasks);
+		tasks.push(...payload);
 
     saveLocalState();
 
