@@ -2442,6 +2442,66 @@ function renderParsedResults(parsedTasks) {
 }
 
 // 카톡 일괄 저장 + 로그 기록
+//async function saveAllParsedTasks() {
+//  if (!canEdit()) {
+//    alert('권한이 없습니다.');
+//    return;
+//  }
+//
+//  if (!window.lastParsedTasks || window.lastParsedTasks.length === 0) {
+//    alert('저장할 일정이 없습니다.');
+//    return;
+//  }
+//
+//  try {
+//    if (isCloudConnected) {
+//
+////      const { error } = await supabaseClient
+////        .from('tasks')
+////        .upsert(window.lastParsedTasks, { onConflict: 'id' });
+//			const payload = window.lastParsedTasks.map(prepareTaskForSupabase);
+//			
+//			const { error } = await supabaseClient
+//			  .from('tasks')
+//			  .upsert(payload, { onConflict: 'id' });
+//
+//
+//      if (error) throw error;
+//    }
+//
+//// 카톡 추출 일괄 저장도 로그 남기기
+//		for (const task of payload) {
+//		  await writeTaskLog({
+//		    action: 'CREATE',
+//		    taskId: task.id,
+//		    beforeData: null,
+//		    afterData: task,
+//		    message: `카톡 추출 일정 등록: ${task.siteName || '현장명 없음'}`
+//		  });
+//		}
+//// 카톡 추출 일괄 저장도 로그 남기기
+//
+////    tasks.push(...window.lastParsedTasks);
+//		tasks.push(...payload);
+//    saveLocalState();
+//
+//    alert(`${window.lastParsedTasks.length}건의 일정이 저장되었습니다.`);
+//
+//    document
+//      .getElementById('parsed-results-container')
+//      .classList.add('hidden');
+//
+//    document.getElementById('chat-input').value = '';
+//
+//    renderCalendar();
+//    updateQuickStats();
+//    renderUtilizationView();
+//    switchTab('calendar');
+//  } catch (error) {
+//    console.error('카톡 추출 일정 저장 오류:', error);
+//    alert(`일괄 저장에 실패했습니다.\n${error.message}`);
+//  }
+//}
 async function saveAllParsedTasks() {
   if (!canEdit()) {
     alert('권한이 없습니다.');
@@ -2454,54 +2514,70 @@ async function saveAllParsedTasks() {
   }
 
   try {
+    // 중요: payload는 try 블록의 가장 위에서 먼저 생성합니다.
+    // 마스트 미입력 값('')도 null로 바꿉니다.
+    const payload = window.lastParsedTasks.map(prepareTaskForSupabase);
+
+    // Supabase에 일정 일괄 저장
     if (isCloudConnected) {
+      const { error } = await supabaseClient
+        .from('tasks')
+        .upsert(payload, { onConflict: 'id' });
 
-//      const { error } = await supabaseClient
-//        .from('tasks')
-//        .upsert(window.lastParsedTasks, { onConflict: 'id' });
-			const payload = window.lastParsedTasks.map(prepareTaskForSupabase);
-			
-			const { error } = await supabaseClient
-			  .from('tasks')
-			  .upsert(payload, { onConflict: 'id' });
-
-
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
     }
 
-// 카톡 추출 일괄 저장도 로그 남기기
-		for (const task of payload) {
-		  await writeTaskLog({
-		    action: 'CREATE',
-		    taskId: task.id,
-		    beforeData: null,
-		    afterData: task,
-		    message: `카톡 추출 일정 등록: ${task.siteName || '현장명 없음'}`
-		  });
-		}
-// 카톡 추출 일괄 저장도 로그 남기기
+    // 일정 저장 성공 후, 각 일정의 로그 기록
+    for (const task of payload) {
+      await writeTaskLog({
+        action: 'CREATE',
+        taskId: task.id,
+        beforeData: null,
+        afterData: task,
+        message: `카톡 추출 일정 등록: ${task.siteName || '현장명 없음'}`
+      });
+    }
 
-//    tasks.push(...window.lastParsedTasks);
-		tasks.push(...payload);
+    // 화면 및 LocalStorage에 반영
+    tasks.push(...payload);
     saveLocalState();
 
-    alert(`${window.lastParsedTasks.length}건의 일정이 저장되었습니다.`);
+    alert(`${payload.length}건의 일정이 저장되었습니다.`);
 
-    document
-      .getElementById('parsed-results-container')
-      .classList.add('hidden');
+    // 추출 결과 숨기기 및 입력 내용 초기화
+    const resultContainer = document.getElementById(
+      'parsed-results-container'
+    );
 
-    document.getElementById('chat-input').value = '';
+    if (resultContainer) {
+      resultContainer.classList.add('hidden');
+    }
+
+    const chatInput = document.getElementById('chat-input');
+
+    if (chatInput) {
+      chatInput.value = '';
+    }
+
+    window.lastParsedTasks = [];
 
     renderCalendar();
     updateQuickStats();
     renderUtilizationView();
     switchTab('calendar');
+
   } catch (error) {
-    console.error('카톡 추출 일정 저장 오류:', error);
-    alert(`일괄 저장에 실패했습니다.\n${error.message}`);
+    console.error('카톡 추출 일정 일괄 저장 오류:', error);
+
+    alert(
+      `일괄 저장에 실패했습니다.\n\n` +
+      `${error.message || 'Supabase 테이블 및 권한 설정을 확인하세요.'}`
+    );
   }
 }
+
 // 카톡 일괄 저장 + 로그 기록
 
 // --- EQUIPMENT UTILIZATION ANALYSIS ---
