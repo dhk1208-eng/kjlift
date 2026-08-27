@@ -93,13 +93,6 @@ body {
         <i class="fa-solid fa-hard-hat"></i>
       </div>
       <div>
-<!--      	
-        <div class="flex items-center gap-1.5">
-          <h1 class="font-extrabold text-base leading-tight">국제산업렌탈</h1>
-          <span id="admin-badge" class="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-slate-900 text-amber-400 hidden">ADMIN</span>
-          <span id="user-auth-badge" class="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-900 text-sky-200 hidden">로그인됨</span>
-        </div>
--->
 				<div class="flex items-center gap-1.5">
 				  <h1 class="font-extrabold text-base leading-tight">국제산업렌탈</h1>
 				</div>
@@ -108,129 +101,76 @@ body {
       </div>
     </div>
 
-    <!-- Auth Buttons & Admin Tools -->
-
-
-
-
-
-
-
-
-
-
-
-<!--
-    <div class="flex items-center gap-1">
-			<button
-			  id="btn-user-logout-top"
-			  onclick="userLogout()"
-			  class="hidden bg-red-700 hover:bg-red-800 text-white text-xs p-2 rounded-lg font-semibold transition shadow-sm"
-			  title="사용자 로그아웃"
-			>
-			  <i class="fa-solid fa-right-from-bracket text-xs"></i>
-			</button>
-
-      <button id="btn-admin-login" onclick="openAdminLoginModal()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm">
-        <i class="fa-solid fa-lock text-[10px]"></i>
-        <span>관리자</span>
-      </button>
-
-      <div id="admin-active-tools" class="hidden flex items-center gap-1">
-        <button onclick="openTeamRegionManageModal()" class="bg-slate-800 text-amber-400 text-xs p-2 rounded-lg font-semibold transition" title="권역 및 25개팀 관리">
-          <i class="fa-solid fa-people-roof text-xs"></i>
-        </button>
-        <button onclick="openUserPermissionManageModal()" class="bg-slate-800 text-amber-300 text-xs p-2 rounded-lg font-semibold transition relative" title="회원 관리">
-          <i class="fa-solid fa-users-gear text-xs"></i>
-          <span id="pending-users-count-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full hidden">0</span>
-        </button>
-        <button onclick="adminLogout()" class="bg-red-700 text-white text-xs p-2 rounded-lg font-semibold transition" title="로그아웃">
-          <i class="fa-solid fa-right-from-bracket text-xs"></i>
-        </button>
-      </div>
-    </div>
--->
-<!-- Auth Buttons & Admin Tools -->
-<div class="flex items-center gap-1">
-
-  <!-- 미로그인 또는 일반 사용자 로그인 상태: 관리자 왼쪽 -->
-  <button
-    id="btn-user-login"
-    onclick="openUserAuthModal()"
-    class="bg-sky-900 hover:bg-sky-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm"
-  >
-    <i class="fa-solid fa-user text-[10px] text-amber-300"></i>
-    <span id="txt-user-login-btn">로그인/가입</span>
-  </button>
-
-  <!-- 미로그인 또는 일반 사용자 로그인 상태 -->
-  <button
-    id="btn-admin-login"
-    onclick="openAdminLoginModal()"
-    class="bg-slate-900 hover:bg-slate-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm"
-  >
-    <i class="fa-solid fa-lock text-[10px]"></i>
-    <span>관리자</span>
-  </button>
-
-  <!-- 일반 사용자 로그인 시에만 표시: 맨 오른쪽 -->
-  <button
-    id="btn-user-logout-top"
-    onclick="userLogout()"
-    class="hidden bg-red-700 hover:bg-red-800 text-white text-xs p-2 rounded-lg font-semibold transition shadow-sm"
-    title="사용자 로그아웃"
-    aria-label="사용자 로그아웃"
-  >
-    <i class="fa-solid fa-right-from-bracket text-xs"></i>
-  </button>
-
-  <!-- 관리자 로그인 시에만 표시 -->
-  <div id="admin-active-tools" class="hidden flex items-center gap-1">
-    <button
-      onclick="openTeamRegionManageModal()"
-      class="bg-slate-800 text-amber-400 text-xs p-2 rounded-lg font-semibold transition"
-      title="권역 및 25개 팀 관리"
-    >
-      <i class="fa-solid fa-people-roof text-xs"></i>
-    </button>
-
-    <button
-      onclick="openUserPermissionManageModal()"
-      class="bg-slate-800 text-amber-300 text-xs p-2 rounded-lg font-semibold transition relative"
-      title="회원 관리"
-    >
-      <i class="fa-solid fa-users-gear text-xs"></i>
-
-      <span
-        id="pending-users-count-badge"
-        class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full hidden"
-      >
-        0
-      </span>
-    </button>
-
-    <!-- 관리자 로그아웃 -->
-    <button
-      onclick="adminLogout()"
-      class="bg-red-700 text-white text-xs p-2 rounded-lg font-semibold transition"
-      title="관리자 로그아웃"
-      aria-label="관리자 로그아웃"
-    >
-      <i class="fa-solid fa-right-from-bracket text-xs"></i>
-    </button>
-  </div>
-</div>
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+		<!-- Auth Buttons & Admin Tools -->
+		<div class="flex items-center gap-1">
+		
+		  <!-- 미로그인 또는 일반 사용자 로그인 상태: 관리자 왼쪽 -->
+		  <button
+		    id="btn-user-login"
+		    onclick="openUserAuthModal()"
+		    class="bg-sky-900 hover:bg-sky-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm"
+		  >
+		    <i class="fa-solid fa-user text-[10px] text-amber-300"></i>
+		    <span id="txt-user-login-btn">로그인/가입</span>
+		  </button>
+		
+		  <!-- 미로그인 또는 일반 사용자 로그인 상태 -->
+		  <button
+		    id="btn-admin-login"
+		    onclick="openAdminLoginModal()"
+		    class="bg-slate-900 hover:bg-slate-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm"
+		  >
+		    <i class="fa-solid fa-lock text-[10px]"></i>
+		    <span>관리자</span>
+		  </button>
+		
+		  <!-- 일반 사용자 로그인 시에만 표시: 맨 오른쪽 -->
+		  <button
+		    id="btn-user-logout-top"
+		    onclick="userLogout()"
+		    class="hidden bg-red-700 hover:bg-red-800 text-white text-xs p-2 rounded-lg font-semibold transition shadow-sm"
+		    title="사용자 로그아웃"
+		    aria-label="사용자 로그아웃"
+		  >
+		    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+		  </button>
+		
+		  <!-- 관리자 로그인 시에만 표시 -->
+		  <div id="admin-active-tools" class="hidden flex items-center gap-1">
+		    <button
+		      onclick="openTeamRegionManageModal()"
+		      class="bg-slate-800 text-amber-400 text-xs p-2 rounded-lg font-semibold transition"
+		      title="권역 및 25개 팀 관리"
+		    >
+		      <i class="fa-solid fa-people-roof text-xs"></i>
+		    </button>
+		
+		    <button
+		      onclick="openUserPermissionManageModal()"
+		      class="bg-slate-800 text-amber-300 text-xs p-2 rounded-lg font-semibold transition relative"
+		      title="회원 관리"
+		    >
+		      <i class="fa-solid fa-users-gear text-xs"></i>
+		
+		      <span
+		        id="pending-users-count-badge"
+		        class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full hidden"
+		      >
+		        0
+		      </span>
+		    </button>
+		
+		    <!-- 관리자 로그아웃 -->
+		    <button
+		      onclick="adminLogout()"
+		      class="bg-red-700 text-white text-xs p-2 rounded-lg font-semibold transition"
+		      title="관리자 로그아웃"
+		      aria-label="관리자 로그아웃"
+		    >
+		      <i class="fa-solid fa-right-from-bracket text-xs"></i>
+		    </button>
+		  </div>
+		</div>
   </div>
 </header>
 
@@ -240,12 +180,6 @@ body {
   <!-- TAB 1: CALENDAR & LIST VIEW -->
   <section id="view-calendar" class="space-y-3">
     <!-- Cloud Status Bar -->
-<!--
-    <div id="cloud-status-banner" class="bg-slate-900 text-amber-300 px-3 py-1.5 rounded-xl text-[11px] font-bold flex justify-between items-center shadow-xs">
-      <span class="flex items-center gap-1.5"><i class="fa-solid fa-cloud text-sky-400"></i> <span id="cloud-status-text">로컬 저장소 동작 중</span></span>
-      <span id="cloud-sync-indicator" class="text-[9px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-mono">OFFLINE</span>
-    </div>
--->
 		<div
 		  id="cloud-status-banner"
 		  class="bg-slate-900 text-amber-300 px-3 py-1.5 rounded-xl text-[11px] font-bold flex justify-between items-center shadow-xs"
@@ -320,7 +254,7 @@ body {
         <div class="flex items-center gap-1">
           <button onclick="toggleExpandCalendar()" id="btn-expand-calendar" class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition">
             <i class="fa-solid fa-expand text-[10px]" id="expand-icon"></i>
-            <span id="expand-btn-text">전체화면</span>
+            <span id="expand-btn-text">전체</span>
           </button>
 
           <button onclick="exportTasksToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition" title="엑셀 내보내기">
@@ -2240,7 +2174,7 @@ function toggleExpandCalendar() {
   if (wrapper.classList.contains('calendar-fullscreen')) {
     wrapper.classList.remove('calendar-fullscreen');
     icon.className = 'fa-solid fa-expand text-[10px]';
-    btnText.innerText = '전체화면';
+    btnText.innerText = '전체';
     fsAddBtn.classList.add('hidden');
     fsCloseBtn.classList.add('hidden');
   } else {
