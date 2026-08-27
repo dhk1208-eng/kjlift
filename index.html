@@ -940,69 +940,6 @@ function saveLocalState() {
   localStorage.setItem('gukje_total_inventory', totalEquipmentInventory.toString());
 }
 
-//// --- CLOUD SYNC (FIREBASE FIRESTORE) ---
-//function initCloudIfConfigured() {
-//  const cfg = localStorage.getItem('gukje_firebase_config');
-//  if (!cfg) return;
-//
-//  try {
-//    const config = JSON.parse(cfg);
-//    if (!firebase.apps.length) {
-//      firebase.initializeApp(config);
-//    }
-//    db = firebase.firestore();
-//
-//    // Anonymous authentication
-//    firebase.auth().signInAnonymously().catch(err => console.error("Auth err:", err));
-//
-//    // Live Snapshot Listener
-//    db.collection("tasks").onSnapshot((snapshot) => {
-//      const cloudTasks = [];
-//      snapshot.forEach((doc) => {
-//        cloudTasks.push({ id: doc.id, ...doc.data() });
-//      });
-//      tasks = cloudTasks;
-//      saveLocalState();
-//      renderCalendar();
-//      updateQuickStats();
-//      renderUtilizationView();
-//    });
-//
-//    // Permission Listener
-//    db.collection("users").onSnapshot((snapshot) => {
-//      userPermissions = [];
-//      snapshot.forEach(doc => userPermissions.push({ id: doc.id, ...doc.data() }));
-//      updatePendingUserBadge();
-//      if (currentUser) {
-//        const found = userPermissions.find(u => u.name === currentUser.name && u.phone === currentUser.phone);
-//        if (found) {
-//          currentUser.approved = found.approved;
-//          localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
-//        }
-//      }
-//    });
-//
-//    isCloudConnected = true;
-//    document.getElementById('cloud-status-text').innerText = "클라우드 공유 실시간 연결됨";
-//    document.getElementById('cloud-sync-indicator').innerText = "ONLINE";
-//    document.getElementById('cloud-sync-indicator').className = "text-[9px] bg-emerald-600 px-2 py-0.5 rounded text-white font-mono";
-//  } catch (e) {
-//    console.error("Cloud init fail:", e);
-//  }
-//}
-//
-//function saveCloudTask(taskData) {
-//  if (!db || !isCloudConnected) return Promise.resolve();
-//  const docRef = taskData.id ? db.collection("tasks").doc(taskData.id) : db.collection("tasks").doc();
-//  taskData.id = docRef.id;
-//  return docRef.set(taskData, { merge: true });
-//}
-//
-//function deleteCloudTask(id) {
-//  if (!db || !isCloudConnected) return Promise.resolve();
-//  return db.collection("tasks").doc(id).delete();
-//}
-
 // --- CLOUD SYNC (SUPABASE) -------------------------------------
 async function initCloudIfConfigured() {
   if (!supabaseClient) {
@@ -1205,38 +1142,6 @@ function openUserAuthModal() {
 function closeUserAuthModal() {
   document.getElementById('user-auth-modal').classList.add('hidden');
 }
-
-//// Firebase ------------------------------------------------
-//function handleUserAuthSubmit() {
-//  const name = document.getElementById('auth-user-name').value.trim();
-//  const phone = document.getElementById('auth-user-phone').value.trim();
-//
-//  if (!name) {
-//    alert("성명을 입력해주세요.");
-//    return;
-//  }
-//
-//  currentUser = { name, phone, approved: false };
-//
-//  if (db && isCloudConnected) {
-//    const userDocId = `${name}_${phone}`.replace(/[^a-zA-Z0-9_]/g, '');
-//    db.collection("users").doc(userDocId).get().then(doc => {
-//      if (doc.exists) {
-//        currentUser.approved = doc.data().approved || false;
-//      } else {
-//        db.collection("users").doc(userDocId).set({ name, phone, approved: false, createdAt: new Date() });
-//      }
-//      localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
-//      updateAuthUIStatus();
-//      closeUserAuthModal();
-//    });
-//  } else {
-//    localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
-//    updateAuthUIStatus();
-//    closeUserAuthModal();
-//  }
-//}
-//// Firebase ------------------------------------------------
 
 // Supabase ------------------------------------------------
 async function handleUserAuthSubmit() {
@@ -1770,25 +1675,6 @@ function closeDuplicateWarningModal() {
   document.getElementById('duplicate-warning-modal').classList.add('hidden');
 }
 
-//// Firebase ---------------------------------------------------
-//function executeTaskSave(taskData) {
-//  const existingIndex = tasks.findIndex(t => t.id === taskData.id);
-//  if (existingIndex >= 0) {
-//    tasks[existingIndex] = taskData;
-//  } else {
-//    tasks.push(taskData);
-//  }
-//
-//  saveLocalState();
-//  saveCloudTask(taskData);
-//
-//  closeModal();
-//  renderCalendar();
-//  updateQuickStats();
-//  renderUtilizationView();
-//}
-//// Firebase ---------------------------------------------------
-
 // Supabase ---------------------------------------------------
 async function executeTaskSave(taskData) {
   try {
@@ -1844,24 +1730,6 @@ async function executeTaskSave(taskData) {
   }
 }
 // Supabase ---------------------------------------------------
-
-//// Firebase ---------------------------------------------------
-//function deleteCurrentTask() {
-//  const id = document.getElementById('task-id').value;
-//  if (!id) return;
-//
-//  if (confirm("정말 이 일정을 삭제하시겠습니까?")) {
-//    tasks = tasks.filter(t => t.id !== id);
-//    saveLocalState();
-//    deleteCloudTask(id);
-//
-//    closeModal();
-//    renderCalendar();
-//    updateQuickStats();
-//    renderUtilizationView();
-//  }
-//}
-//// Firebase ---------------------------------------------------
 
 // Supabase ---------------------------------------------------
 async function deleteCurrentTask() {
@@ -2347,48 +2215,9 @@ function resetTeamsToDefault() {
   }
 }
 
-//// Firebase--------------------------------------
-//function openCloudConfigModal() {
-//  const cfg = localStorage.getItem('gukje_firebase_config');
-//  if (cfg) {
-//    try {
-//      const parsed = JSON.parse(cfg);
-//      document.getElementById('cfg-apiKey').value = parsed.apiKey || '';
-//      document.getElementById('cfg-projectId').value = parsed.projectId || '';
-//      document.getElementById('cfg-appId').value = parsed.appId || '';
-//    } catch (e) {}
-//  }
-//  document.getElementById('cloud-config-modal').classList.remove('hidden');
-//}
-//// Firebase--------------------------------------
-
 function closeCloudConfigModal() {
   document.getElementById('cloud-config-modal').classList.add('hidden');
 }
-
-// Firebase--------------------------------------
-//function saveCloudConfig() {
-//  const apiKey = document.getElementById('cfg-apiKey').value.trim();
-//  const projectId = document.getElementById('cfg-projectId').value.trim();
-//  const appId = document.getElementById('cfg-appId').value.trim();
-//
-//  if (!apiKey || !projectId) {
-//    alert("API Key와 Project ID는 필수입니다.");
-//    return;
-//  }
-//
-//  const config = { apiKey, projectId, appId, authDomain: `${projectId}.firebaseapp.com` };
-//  localStorage.setItem('gukje_firebase_config', JSON.stringify(config));
-//  closeCloudConfigModal();
-//  location.reload();
-//}
-
-//function disconnectCloud() {
-//  localStorage.removeItem('gukje_firebase_config');
-//  closeCloudConfigModal();
-//  location.reload();
-//}
-//// Firebase--------------------------------------
 
 function openUserPermissionManageModal() {
   renderUserPermissionList();
@@ -2417,16 +2246,6 @@ function renderUserPermissionList() {
     `).join('');
   }
 }
-
-//// Firebase ----------------------------------
-//function toggleUserApproval(userId, newApproved) {
-//  if (db && isCloudConnected) {
-//    db.collection("users").doc(userId).update({ approved: newApproved }).then(() => {
-//      renderUserPermissionList();
-//    });
-//  }
-//}
-//// Firebase ----------------------------------
 
 // Supabase ----------------------------------
 async function toggleUserApproval(userId, newApproved) {
