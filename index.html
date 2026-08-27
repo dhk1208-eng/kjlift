@@ -109,13 +109,19 @@ body {
     </div>
 
     <!-- Auth Buttons & Admin Tools -->
-    <div class="flex items-center gap-1">
+
+
+
+
+
+
+
+
+
+
+
 <!--
-      <button id="btn-user-login" onclick="openUserAuthModal()" class="bg-sky-900 hover:bg-sky-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm">
-        <i class="fa-solid fa-user text-[10px] text-amber-300"></i>
-        <span id="txt-user-login-btn">로그인/가입</span>
-      </button>
--->
+    <div class="flex items-center gap-1">
 			<button
 			  id="btn-user-logout-top"
 			  onclick="userLogout()"
@@ -134,11 +140,6 @@ body {
         <button onclick="openTeamRegionManageModal()" class="bg-slate-800 text-amber-400 text-xs p-2 rounded-lg font-semibold transition" title="권역 및 25개팀 관리">
           <i class="fa-solid fa-people-roof text-xs"></i>
         </button>
-<!--Firebase
-        <button onclick="openCloudConfigModal()" class="bg-slate-800 text-sky-300 text-xs p-2 rounded-lg font-semibold transition" title="클라우드 동기화 설정">
-          <i class="fa-solid fa-cloud text-xs"></i>
-        </button>
--->        
         <button onclick="openUserPermissionManageModal()" class="bg-slate-800 text-amber-300 text-xs p-2 rounded-lg font-semibold transition relative" title="회원 관리">
           <i class="fa-solid fa-users-gear text-xs"></i>
           <span id="pending-users-count-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full hidden">0</span>
@@ -148,6 +149,88 @@ body {
         </button>
       </div>
     </div>
+-->
+<!-- Auth Buttons & Admin Tools -->
+<div class="flex items-center gap-1">
+
+  <!-- 미로그인 또는 일반 사용자 로그인 상태: 관리자 왼쪽 -->
+  <button
+    id="btn-user-login"
+    onclick="openUserAuthModal()"
+    class="bg-sky-900 hover:bg-sky-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm"
+  >
+    <i class="fa-solid fa-user text-[10px] text-amber-300"></i>
+    <span id="txt-user-login-btn">로그인/가입</span>
+  </button>
+
+  <!-- 미로그인 또는 일반 사용자 로그인 상태 -->
+  <button
+    id="btn-admin-login"
+    onclick="openAdminLoginModal()"
+    class="bg-slate-900 hover:bg-slate-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm"
+  >
+    <i class="fa-solid fa-lock text-[10px]"></i>
+    <span>관리자</span>
+  </button>
+
+  <!-- 일반 사용자 로그인 시에만 표시: 맨 오른쪽 -->
+  <button
+    id="btn-user-logout-top"
+    onclick="userLogout()"
+    class="hidden bg-red-700 hover:bg-red-800 text-white text-xs p-2 rounded-lg font-semibold transition shadow-sm"
+    title="사용자 로그아웃"
+    aria-label="사용자 로그아웃"
+  >
+    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+  </button>
+
+  <!-- 관리자 로그인 시에만 표시 -->
+  <div id="admin-active-tools" class="hidden flex items-center gap-1">
+    <button
+      onclick="openTeamRegionManageModal()"
+      class="bg-slate-800 text-amber-400 text-xs p-2 rounded-lg font-semibold transition"
+      title="권역 및 25개 팀 관리"
+    >
+      <i class="fa-solid fa-people-roof text-xs"></i>
+    </button>
+
+    <button
+      onclick="openUserPermissionManageModal()"
+      class="bg-slate-800 text-amber-300 text-xs p-2 rounded-lg font-semibold transition relative"
+      title="회원 관리"
+    >
+      <i class="fa-solid fa-users-gear text-xs"></i>
+
+      <span
+        id="pending-users-count-badge"
+        class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full hidden"
+      >
+        0
+      </span>
+    </button>
+
+    <!-- 관리자 로그아웃 -->
+    <button
+      onclick="adminLogout()"
+      class="bg-red-700 text-white text-xs p-2 rounded-lg font-semibold transition"
+      title="관리자 로그아웃"
+      aria-label="관리자 로그아웃"
+    >
+      <i class="fa-solid fa-right-from-bracket text-xs"></i>
+    </button>
+  </div>
+</div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   </div>
 </header>
 
