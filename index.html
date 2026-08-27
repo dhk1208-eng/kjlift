@@ -1310,6 +1310,56 @@ function prepareTaskForSupabase(task) {
   };
 }
 
+// 로그 기록 함수
+async function writeTaskLog({
+  action,
+  taskId,
+  beforeData = null,
+  afterData = null,
+  message = ''
+}) {
+  // Supabase가 연결되지 않은 경우 로그 저장을 건너뜁니다.
+  if (!supabaseClient) {
+    console.warn('Supabase 미연결: 로그를 저장하지 못했습니다.');
+    return;
+  }
+
+  const task = afterData || beforeData || {};
+
+  const logData = {
+    task_id: taskId || task.id || null,
+    action: action,
+
+    // 현재 로그인 사용자 정보
+    user_name: currentUser?.name || (isAdmin ? '관리자' : '알 수 없음'),
+    user_phone: currentUser?.phone || null,
+    user_key: currentUser?.userKey || null,
+
+    // 일정의 주요 식별 정보
+    task_date: task.date || null,
+    site_name: task.siteName || null,
+    work_type: task.workType || null,
+    region: task.region || null,
+
+    message: message,
+
+    // PostgreSQL jsonb로 저장
+    before_data: beforeData,
+    after_data: afterData
+  };
+
+  const { error } = await supabaseClient
+    .from('task_logs')
+    .insert([logData]);
+
+  if (error) {
+    // 일정 저장/삭제가 성공한 후 로그 저장만 실패할 수 있으므로,
+    // 로그 오류가 일정 처리 자체를 막지는 않도록 경고만 남깁니다.
+    console.error('작업 로그 저장 실패:', error);
+  }
+}
+// 로그 기록 함수
+
 // --- CLOUD SYNC (SUPABASE) -------------------------------------
 async function initCloudIfConfigured() {
   if (!supabaseClient) {
@@ -2077,6 +2127,62 @@ function closeDuplicateWarningModal() {
 }
 
 // Supabase ---------------------------------------------------
+//async function executeTaskSave(taskData) {
+//  try {
+//    const saveButton = document.querySelector(
+//      '#task-modal button[onclick="saveTaskFromModal()"]'
+//    );
+//
+//    if (saveButton) {
+//      saveButton.disabled = true;
+//      saveButton.innerText = '저장 중...';
+//    }
+//
+//    // Supabase 저장이 먼저 성공해야 화면 상태를 바꿉니다.
+//    if (isCloudConnected) {
+//      const result = await saveCloudTask(taskData);
+//
+//      if (result.data) {
+//        taskData = result.data;
+//      }
+//    }
+//
+//    const existingIndex = tasks.findIndex(task => task.id === taskData.id);
+//
+//    if (existingIndex >= 0) {
+//      tasks[existingIndex] = taskData;
+//    } else {
+//      tasks.push(taskData);
+//    }
+//
+//    saveLocalState();
+//    closeModal();
+//    renderCalendar();
+//    updateQuickStats();
+//    renderUtilizationView();
+//
+//    alert('일정이 저장되었습니다.');
+//  } catch (error) {
+//    console.error('일정 저장 오류:', error);
+//
+//    alert(
+//      `일정 저장에 실패했습니다.\n\n` +
+//      `${error.message || 'Supabase 테이블 및 RLS 정책을 확인하세요.'}`
+//    );
+//  } finally {
+//    const saveButton = document.querySelector(
+//      '#task-modal button[onclick="saveTaskFromModal()"]'
+//    );
+//
+//    if (saveButton) {
+//      saveButton.disabled = false;
+//      saveButton.innerText = '저장하기';
+//    }
+//  }
+//}
+// Supabase ---------------------------------------------------
+
+// 데이터 저장+로그 기록
 async function executeTaskSave(taskData) {
   try {
     const saveButton = document.querySelector(
@@ -2088,21 +2194,31 @@ async function executeTaskSave(taskData) {
       saveButton.innerText = '저장 중...';
     }
 
-    // Supabase 저장이 먼저 성공해야 화면 상태를 바꿉니다.
+    // 저장 전에 기존 데이터가 있는지 확인
+    const existingTask = tasks.find(task => task.id === taskData.id);
+    const action = existingTask ? 'UPDATE' : 'CREATE';
+
+    // Supabase에 저장하기 전에는 빈 마스트값 등을 null로 정리
+    const payload = prepareTaskForSupabase(taskData);
+
+    let savedTask = payload;
+
+    // 1) 일정 저장
     if (isCloudConnected) {
-      const result = await saveCloudTask(taskData);
+      const result = await saveCloudTask(payload);
 
       if (result.data) {
-        taskData = result.data;
+        savedTask = result.data;
       }
     }
 
-    const existingIndex = tasks.findIndex(task => task.id === taskData.id);
+    // 2) 화면/LocalStorage 데이터 반영
+    const existingIndex = tasks.findIndex(task => task.id === savedTask.id);
 
     if (existingIndex >= 0) {
-      tasks[existingIndex] = taskData;
+      tasks[existingIndex] = savedTask;
     } else {
-      tasks.push(taskData);
+      tasks.push(savedTask);
     }
 
     saveLocalState();
@@ -2111,7 +2227,24 @@ async function executeTaskSave(taskData) {
     updateQuickStats();
     renderUtilizationView();
 
-    alert('일정이 저장되었습니다.');
+    // 3) 일정 저장 성공 후 로그 기록
+    await writeTaskLog({
+      action: action,
+      taskId: savedTask.id,
+      beforeData: existingTask || null,
+      afterData: savedTask,
+      message:
+        action === 'CREATE'
+          ? `일정 등록: ${savedTask.siteName || '현장명 없음'}`
+          : `일정 수정: ${savedTask.siteName || '현장명 없음'}`
+    });
+
+    alert(
+      action === 'CREATE'
+        ? '일정이 저장되었습니다.'
+        : '일정이 수정되었습니다.'
+    );
+
   } catch (error) {
     console.error('일정 저장 오류:', error);
 
@@ -2119,6 +2252,7 @@ async function executeTaskSave(taskData) {
       `일정 저장에 실패했습니다.\n\n` +
       `${error.message || 'Supabase 테이블 및 RLS 정책을 확인하세요.'}`
     );
+
   } finally {
     const saveButton = document.querySelector(
       '#task-modal button[onclick="saveTaskFromModal()"]'
@@ -2130,23 +2264,77 @@ async function executeTaskSave(taskData) {
     }
   }
 }
-// Supabase ---------------------------------------------------
+// 데이터 저장+로그 기록
 
 // Supabase ---------------------------------------------------
+//async function deleteCurrentTask() {
+//  const id = document.getElementById('task-id').value;
+//
+//  if (!id) return;
+//
+//  if (!confirm('정말 이 일정을 삭제하시겠습니까?')) {
+//    return;
+//  }
+//
+//  try {
+//    if (isCloudConnected) {
+//      await deleteCloudTask(id);
+//    }
+//
+//    tasks = tasks.filter(task => task.id !== id);
+//
+//    saveLocalState();
+//    closeModal();
+//    renderCalendar();
+//    updateQuickStats();
+//    renderUtilizationView();
+//
+//    alert('일정이 삭제되었습니다.');
+//  } catch (error) {
+//    console.error('일정 삭제 오류:', error);
+//    alert(`일정 삭제에 실패했습니다.\n${error.message}`);
+//  }
+//}
+// Supabase ---------------------------------------------------
+
+// 삭제 + 로그 기록
 async function deleteCurrentTask() {
   const id = document.getElementById('task-id').value;
 
-  if (!id) return;
+  if (!id) {
+    alert('삭제할 일정 정보를 찾을 수 없습니다.');
+    return;
+  }
 
-  if (!confirm('정말 이 일정을 삭제하시겠습니까?')) {
+  const taskToDelete = tasks.find(task => task.id === id);
+
+  if (!taskToDelete) {
+    alert('삭제할 일정을 찾을 수 없습니다.');
+    return;
+  }
+
+  if (!confirm(`"${taskToDelete.siteName}" 일정을 정말 삭제하시겠습니까?`)) {
     return;
   }
 
   try {
+    // 1) Supabase에서 일정 삭제
     if (isCloudConnected) {
       await deleteCloudTask(id);
     }
 
+    // 2) 삭제 로그 기록
+    // 삭제 후에는 tasks 테이블에서 원본을 찾을 수 없으므로
+    // taskToDelete를 before_data에 보관합니다.
+    await writeTaskLog({
+      action: 'DELETE',
+      taskId: id,
+      beforeData: taskToDelete,
+      afterData: null,
+      message: `일정 삭제: ${taskToDelete.siteName || '현장명 없음'}`
+    });
+
+    // 3) 화면/LocalStorage 데이터 제거
     tasks = tasks.filter(task => task.id !== id);
 
     saveLocalState();
@@ -2156,12 +2344,17 @@ async function deleteCurrentTask() {
     renderUtilizationView();
 
     alert('일정이 삭제되었습니다.');
+
   } catch (error) {
     console.error('일정 삭제 오류:', error);
-    alert(`일정 삭제에 실패했습니다.\n${error.message}`);
+
+    alert(
+      `일정 삭제에 실패했습니다.\n\n` +
+      `${error.message || 'Supabase 연결 및 권한을 확인하세요.'}`
+    );
   }
 }
-// Supabase ---------------------------------------------------
+// 삭제 + 로그 기록
 
 // --- KAKAOTALK PARSER ---
 function insertSampleChat() {
@@ -2248,7 +2441,7 @@ function renderParsedResults(parsedTasks) {
   document.getElementById('parsed-results-container').classList.remove('hidden');
 }
 
-// Supabase --------------------------------------------
+// 카톡 일괄 저장 + 로그 기록
 async function saveAllParsedTasks() {
   if (!canEdit()) {
     alert('권한이 없습니다.');
@@ -2276,9 +2469,20 @@ async function saveAllParsedTasks() {
       if (error) throw error;
     }
 
+// 카톡 추출 일괄 저장도 로그 남기기
+		for (const task of payload) {
+		  await writeTaskLog({
+		    action: 'CREATE',
+		    taskId: task.id,
+		    beforeData: null,
+		    afterData: task,
+		    message: `카톡 추출 일정 등록: ${task.siteName || '현장명 없음'}`
+		  });
+		}
+// 카톡 추출 일괄 저장도 로그 남기기
+
 //    tasks.push(...window.lastParsedTasks);
 		tasks.push(...payload);
-
     saveLocalState();
 
     alert(`${window.lastParsedTasks.length}건의 일정이 저장되었습니다.`);
@@ -2298,7 +2502,7 @@ async function saveAllParsedTasks() {
     alert(`일괄 저장에 실패했습니다.\n${error.message}`);
   }
 }
-// Supabase --------------------------------------------
+// 카톡 일괄 저장 + 로그 기록
 
 // --- EQUIPMENT UTILIZATION ANALYSIS ---
 function renderUtilizationView() {
