@@ -251,6 +251,7 @@ body {
 
         </div>
 
+ <!--
         <div class="flex items-center gap-1">
           <button onclick="toggleExpandCalendar()" id="btn-expand-calendar" class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition">
             <i class="fa-solid fa-expand text-[10px]" id="expand-icon"></i>
@@ -265,6 +266,34 @@ body {
             <i class="fa-solid fa-plus text-[10px]"></i> 추가
           </button>
         </div>
+-->
+				<div class="flex items-center gap-1">
+				  <button
+				    onclick="toggleExpandCalendar()"
+				    id="btn-expand-calendar"
+				    class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-[11px] px-1.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
+				  >
+				    <i class="fa-solid fa-expand text-[9px]" id="expand-icon"></i>
+				    <span id="expand-btn-text">전체화면</span>
+				  </button>
+				
+				  <button
+				    onclick="exportTasksToExcel()"
+				    class="bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] px-1.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
+				    title="엑셀 내보내기"
+				  >
+				    <i class="fa-solid fa-file-excel text-[10px]"></i>
+				    엑셀
+				  </button>
+				
+				  <button
+				    onclick="handleAddTaskClick()"
+				    class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] px-1.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
+				  >
+				    <i class="fa-solid fa-plus text-[9px]"></i>
+				    추가
+				  </button>
+				</div>
       </div>
 
       <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-100">
