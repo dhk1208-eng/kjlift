@@ -1235,6 +1235,44 @@ function saveLocalState() {
   localStorage.setItem('gukje_total_inventory', totalEquipmentInventory.toString());
 }
 
+function toNullableInteger(value) {
+  // 빈 값은 DB의 NULL로 저장
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  return Number.isInteger(numberValue) ? numberValue : null;
+}
+
+function toNullableNumber(value) {
+  // 빈 값은 DB의 NULL로 저장
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function prepareTaskForSupabase(task) {
+  return {
+    ...task,
+
+    // quantity가 smallint/integer라면 숫자로 전달
+    quantity: toNullableInteger(task.quantity) ?? 1,
+
+    // 마스트 미입력 시 '' 대신 null 전달
+    mastCount: toNullableInteger(task.mastCount),
+    mastHeight: toNullableNumber(task.mastHeight),
+
+    // 항상 최신 수정시간 기록
+    updatedAt: task.updatedAt || new Date().toISOString()
+  };
+}
+
 // --- CLOUD SYNC (SUPABASE) -------------------------------------
 async function initCloudIfConfigured() {
   if (!supabaseClient) {
@@ -1351,6 +1389,7 @@ async function saveCloudTask(taskData) {
     return { data: null, error: null };
   }
 
+  const payload = prepareTaskForSupabase(taskData);
   const { data, error } = await supabaseClient
     .from('tasks')
     .upsert(taskData, { onConflict: 'id' })
@@ -2142,29 +2181,6 @@ function renderParsedResults(parsedTasks) {
   document.getElementById('parsed-results-container').classList.remove('hidden');
 }
 
-// Firebase --------------------------------------------
-function saveAllParsedTasks() {
-  if (!canEdit()) {
-    alert("권한이 없습니다.");
-    return;
-  }
-
-  if (window.lastParsedTasks && window.lastParsedTasks.length > 0) {
-    tasks.push(...window.lastParsedTasks);
-    saveLocalState();
-    window.lastParsedTasks.forEach(t => saveCloudTask(t));
-
-    alert(`${window.lastParsedTasks.length}건의 일정이 저장되었습니다.`);
-    document.getElementById('parsed-results-container').classList.add('hidden');
-    document.getElementById('chat-input').value = '';
-    renderCalendar();
-    updateQuickStats();
-    renderUtilizationView();
-    switchTab('calendar');
-  }
-}
-// Firebase --------------------------------------------
-
 // Supabase --------------------------------------------
 async function saveAllParsedTasks() {
   if (!canEdit()) {
@@ -2179,9 +2195,16 @@ async function saveAllParsedTasks() {
 
   try {
     if (isCloudConnected) {
-      const { error } = await supabaseClient
-        .from('tasks')
-        .upsert(window.lastParsedTasks, { onConflict: 'id' });
+
+//      const { error } = await supabaseClient
+//        .from('tasks')
+//        .upsert(window.lastParsedTasks, { onConflict: 'id' });
+			const payload = window.lastParsedTasks.map(prepareTaskForSupabase);
+			
+			const { error } = await supabaseClient
+			  .from('tasks')
+			  .upsert(payload, { onConflict: 'id' });
+
 
       if (error) throw error;
     }
