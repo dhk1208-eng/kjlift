@@ -217,6 +217,30 @@ body {
 		</div>
 
     <!-- Quick Counter -->
+<!-- Quick Counter: 압축 높이 -->
+		<div class="grid grid-cols-4 gap-1 rounded-lg border border-slate-200/80 bg-white p-1 shadow-xs text-center">
+		  <div class="rounded-md bg-slate-50 py-0.5">
+		    <p class="text-[9px] leading-tight font-semibold text-slate-500">전체</p>
+		    <p id="stat-total" class="text-xs leading-tight font-bold text-slate-800">0</p>
+		  </div>
+		
+		  <div class="rounded-md bg-sky-50 py-0.5">
+		    <p class="text-[9px] leading-tight font-semibold text-sky-600">설치</p>
+		    <p id="stat-install" class="text-xs leading-tight font-bold text-sky-700">0</p>
+		  </div>
+		
+		  <div class="rounded-md bg-red-50 py-0.5">
+		    <p class="text-[9px] leading-tight font-semibold text-red-600">해체</p>
+		    <p id="stat-dismantle" class="text-xs leading-tight font-bold text-red-700">0</p>
+		  </div>
+		
+		  <div class="rounded-md bg-amber-50 py-0.5">
+		    <p class="text-[9px] leading-tight font-semibold text-amber-600">인상</p>
+		    <p id="stat-jacking" class="text-xs leading-tight font-bold text-amber-700">0</p>
+		  </div>
+		</div>
+    
+<!--
     <div class="grid grid-cols-4 gap-1.5 text-center bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
       <div class="p-1 rounded-lg bg-slate-50">
         <p class="text-[10px] text-slate-500 font-semibold">전체</p>
@@ -235,43 +259,27 @@ body {
         <p id="stat-jacking" class="text-sm font-bold text-amber-700">0</p>
       </div>
     </div>
-
+-->
     <!-- Controls & Filter Bar -->
     <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs space-y-2">
       <div class="flex justify-between items-center flex-wrap gap-1">
         <div class="flex gap-1 text-xs">
-          <button onclick="setFilter('전체')" id="filter-all"  class="filter-btn px-2 py-0.2 rounded-lg font-semibold bg-slate-900 text-white text-[10px]">전체</button>
-          <button onclick="setFilter('설치')" id="filter-설치" class="filter-btn px-2 py-0.2 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[10px]">설치</button>
-          <button onclick="setFilter('해체')" id="filter-해체" class="filter-btn px-2 py-0.2 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[10px]">해체</button>
-          <button onclick="setFilter('인상')" id="filter-인상" class="filter-btn px-2 py-0.2 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[10px]">인상</button>
+          <button onclick="setFilter('전체')" id="filter-all"  class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-900 text-white text-[11px]">전체</button>
+          <button onclick="setFilter('설치')" id="filter-설치" class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">설치</button>
+          <button onclick="setFilter('해체')" id="filter-해체" class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">해체</button>
+          <button onclick="setFilter('인상')" id="filter-인상" class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">인상</button>
 
 <!-- 관리자 로그인 시에만 표시되는 로그 버튼 -->
-					<button id="admin-log-button" onclick="openTaskLogsModal()" class="hidden px-2 py-1 rounded-lg font-semibold bg-violet-100 text-violet-700 text-[10px]">  <i class="fa-solid fa-clock-rotate-left mr-0.5"></i>로그</button>
+					<button id="admin-log-button" onclick="openTaskLogsModal()" class="hidden px-2 py-1 rounded-lg font-semibold bg-violet-100 text-violet-700 text-[11px]">  <i class="fa-solid fa-clock-rotate-left mr-0.5"></i>로그</button>
 <!-- 관리자 로그인 시에만 표시되는 로그 버튼 -->
 
         </div>
 
- <!--
-        <div class="flex items-center gap-1">
-          <button onclick="toggleExpandCalendar()" id="btn-expand-calendar" class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition">
-            <i class="fa-solid fa-expand text-[10px]" id="expand-icon"></i>
-            <span id="expand-btn-text">전체</span>
-          </button>
-
-          <button onclick="exportTasksToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition" title="엑셀 내보내기">
-            <i class="fa-solid fa-file-excel text-[11px]"></i> 엑셀
-          </button>
-
-          <button onclick="handleAddTaskClick()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs transition">
-            <i class="fa-solid fa-plus text-[10px]"></i> 추가
-          </button>
-        </div>
--->
 				<div class="flex items-center gap-1">
 				  <button
 				    onclick="toggleExpandCalendar()"
 				    id="btn-expand-calendar"
-				    class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-[11px] px-1.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
+				    class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-[11px] px-0.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
 				  >
 				    <i class="fa-solid fa-expand text-[9px]" id="expand-icon"></i>
 				    <span id="expand-btn-text">전체</span>
@@ -279,7 +287,7 @@ body {
 				
 				  <button
 				    onclick="exportTasksToExcel()"
-				    class="bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] px-1.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
+				    class="bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] px-0.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
 				    title="엑셀 내보내기"
 				  >
 				    <i class="fa-solid fa-file-excel text-[10px]"></i>
@@ -288,7 +296,7 @@ body {
 				
 				  <button
 				    onclick="handleAddTaskClick()"
-				    class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] px-1.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
+				    class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] px-0.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
 				  >
 				    <i class="fa-solid fa-plus text-[9px]"></i>
 				    추가
