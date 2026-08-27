@@ -391,6 +391,7 @@ body {
 
 <!-- Mobile Bottom Navigation Bar -->
 <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 shadow-lg z-30 pb-safe" id="bottom-nav">
+<!--
   <div class="max-w-md mx-auto grid grid-cols-4 text-center py-1.5" id="bottom-nav-container">
     <button id="nav-calendar" onclick="switchTab('calendar')" class="flex flex-col items-center justify-center py-1 text-amber-600 font-bold">
       <i class="fa-regular fa-calendar-days text-base mb-0.5"></i>
@@ -410,7 +411,6 @@ body {
     </button>
   </div>
 
-  <!-- 메뉴 버튼 영역 아래의 중앙 버전 표시 -->
   <div class="max-w-md mx-auto pb-1 text-center">
     <span
       id="app-version"
@@ -418,6 +418,64 @@ body {
     > Ver:로딩 중
     </span>
   </div>
+-->
+
+
+<div
+  class="max-w-md mx-auto grid grid-cols-4 text-center py-1"
+  id="bottom-nav-container"
+>
+  <button
+    id="nav-calendar"
+    onclick="switchTab('calendar')"
+    class="flex flex-col items-center justify-center py-0.5 text-amber-600 font-bold"
+  >
+    <i class="fa-regular fa-calendar-days text-base mb-0"></i>
+    <span class="text-[10px]">일정표</span>
+  </button>
+
+  <button
+    id="nav-extractor"
+    onclick="switchTab('extractor')"
+    class="flex flex-col items-center justify-center py-0.5 text-slate-400 font-medium"
+  >
+    <i class="fa-solid fa-comments text-base mb-0"></i>
+    <span class="text-[10px]">카톡추출</span>
+  </button>
+
+  <button
+    id="nav-utilization"
+    onclick="switchTab('utilization')"
+    class="flex flex-col items-center justify-center py-0.5 text-slate-400 font-medium"
+  >
+    <i class="fa-solid fa-chart-pie text-base mb-0"></i>
+    <span class="text-[10px]">가동률</span>
+  </button>
+
+  <button
+    id="nav-summary"
+    onclick="switchTab('summary')"
+    class="flex flex-col items-center justify-center py-0.5 text-slate-400 font-medium"
+  >
+    <i class="fa-solid fa-copy text-base mb-0"></i>
+    <span class="text-[10px]">지역/주간요약</span>
+  </button>
+</div>
+
+<!-- Copyright / 버전 위 구분선 -->
+<div class="mx-3 border-t border-slate-200"></div>
+
+<!-- 메뉴 버튼 영역 아래의 중앙 Copyright / 버전 표시 -->
+<div class="max-w-md mx-auto py-0.5 text-center leading-none">
+  <span
+    id="app-version"
+    class="whitespace-nowrap text-[9px] font-bold text-slate-300"
+  >
+    Copyright: Kukje Industrial Rental / Ver:로딩 중
+  </span>
+</div>
+
+
     
 </nav>
 
