@@ -463,7 +463,7 @@ body {
 </div>
 
 <!-- Copyright / 버전 위 구분선 -->
-<div class="mx-3 border-t border-slate-200"></div>
+<div class="mx-3 h-px bg-slate-400"></div>
 
 <!-- 메뉴 버튼 영역 아래의 중앙 Copyright / 버전 표시 -->
 <div class="max-w-md mx-auto py-0.5 text-center leading-none">
@@ -1624,15 +1624,24 @@ function updateAuthUIStatus() {
   const userBadge = document.getElementById('user-auth-badge');
   const adminTools = document.getElementById('admin-active-tools');
   const loginBtnText = document.getElementById('txt-user-login-btn');
+	const userLoginButton = document.getElementById('btn-user-login');
 
   if (isAdmin) {
     adminBadge.classList.remove('hidden');
     adminTools.classList.remove('hidden');
     document.getElementById('btn-admin-login').classList.add('hidden');
+    // 관리자 로그인 시 "로그인/가입" 버튼 숨김
+    if (userLoginButton) {
+      userLoginButton.classList.add('hidden');
+    }
   } else {
     adminBadge.classList.add('hidden');
     adminTools.classList.add('hidden');
     document.getElementById('btn-admin-login').classList.remove('hidden');
+    // 관리자 로그아웃 시 "로그인/가입" 버튼 다시 표시
+    if (userLoginButton) {
+      userLoginButton.classList.remove('hidden');
+    }
   }
 
 	// 관리자일 때만 일정 필터 옆 "로그" 버튼 표시
