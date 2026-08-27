@@ -385,13 +385,7 @@ body {
 </main>
 
 <!-- Mobile Bottom Navigation Bar -->
-<!--
 <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 shadow-lg z-30 pb-safe" id="bottom-nav">
--->
-<!-- 버젼-->
-<nav class="fixed bottom-0 left-0 right-0 min-h-[64px] bg-white border-t border-slate-200/80 shadow-lg z-30 pb-safe" id="bottom-nav">
-<!-- 버젼-->
-
   <div class="max-w-md mx-auto grid grid-cols-4 text-center py-1.5" id="bottom-nav-container">
     <button id="nav-calendar" onclick="switchTab('calendar')" class="flex flex-col items-center justify-center py-1 text-amber-600 font-bold">
       <i class="fa-regular fa-calendar-days text-base mb-0.5"></i>
@@ -405,34 +399,22 @@ body {
       <i class="fa-solid fa-chart-pie text-base mb-0.5"></i>
       <span class="text-[10px]">가동률</span>
     </button>
-<!--
     <button id="nav-summary" onclick="switchTab('summary')" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
       <i class="fa-solid fa-copy text-base mb-0.5"></i>
       <span class="text-[10px]">지역/주간요약</span>
     </button>
--->
-
-<!--버젼-->
-<button
-  id="nav-summary"
-  onclick="switchTab('summary')"
-  class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium"
->
-  <i class="fa-solid fa-copy text-base mb-0 5"></i>
-
-  <span class="text-[10px]">지역/주간요약</span>
-
-  <!-- 지역/주간요약 바로 아래 가운데 버전 표시 -->
-  <span
-    id="app-version"
-    class="mt-0.5 whitespace-nowrap text-center text-[8px] font-bold leading-none text-slate-400"
-  >
-    Ver:로딩 중
-  </span>
-</button>
-<!--버젼-->
-    
   </div>
+
+  <!-- 메뉴 버튼 영역 아래의 중앙 버전 표시 -->
+  <div class="max-w-md mx-auto pb-1 text-center">
+    <span
+      id="app-version"
+      class="whitespace-nowrap text-[8px] font-bold leading-none text-slate-400"
+    >
+      Ver:로딩 중
+    </span>
+  </div>
+    
 </nav>
 
 <!-- User Login & Signup Modal -->
