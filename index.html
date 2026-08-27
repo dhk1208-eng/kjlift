@@ -174,6 +174,11 @@ body {
           <button onclick="setFilter('설치')" id="filter-설치" class="filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">설치</button>
           <button onclick="setFilter('해체')" id="filter-해체" class="filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">해체</button>
           <button onclick="setFilter('인상')" id="filter-인상" class="filter-btn px-2 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">인상</button>
+
+<!-- 관리자 로그인 시에만 표시되는 로그 버튼 -->
+					<button id="admin-log-button" onclick="openTaskLogsModal()" class="hidden px-2 py-1 rounded-lg font-semibold bg-violet-100 text-violet-700 text-[11px]">  <i class="fa-solid fa-clock-rotate-left mr-0.5"></i>로그</button>
+<!-- 관리자 로그인 시에만 표시되는 로그 버튼 -->
+
         </div>
 
         <div class="flex items-center gap-1">
@@ -772,6 +777,58 @@ body {
   </div>
 </div>
 
+<!-- 관리자 전용: 작업 이력 로그 모달 -->
+<div
+  id="task-logs-modal"
+  class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-3 hidden"
+>
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh]">
+
+    <div class="p-3.5 bg-slate-900 text-white flex justify-between items-center">
+      <div>
+        <h3 class="font-bold text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>
+          작업 이력 로그
+        </h3>
+        <p class="text-[10px] mt-0.5 text-slate-300">
+          일정 등록 · 수정 · 삭제 기록
+        </p>
+      </div>
+
+      <button
+        onclick="closeTaskLogsModal()"
+        class="text-slate-400 hover:text-white p-1"
+      >
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+    </div>
+
+    <div
+      id="task-logs-list"
+      class="p-3 overflow-y-auto space-y-2 custom-scrollbar flex-grow bg-slate-50"
+    >
+      <div class="py-10 text-center text-xs text-slate-400">
+        로그를 불러오는 중입니다.
+      </div>
+    </div>
+
+    <div class="p-3 bg-white border-t border-slate-100 flex justify-between items-center">
+      <span id="task-logs-count" class="text-[10px] font-bold text-slate-400">
+        총 0건
+      </span>
+
+      <button
+        onclick="closeTaskLogsModal()"
+        class="px-4 py-1.5 text-xs bg-slate-200 text-slate-700 font-bold rounded-lg"
+      >
+        닫기
+      </button>
+    </div>
+
+  </div>
+</div>
+<!-- 관리자 전용: 작업 이력 로그 모달 -->
+
 <!-- App Logic Script -->
 <script>
 	
@@ -1235,17 +1292,6 @@ function saveLocalState() {
   localStorage.setItem('gukje_total_inventory', totalEquipmentInventory.toString());
 }
 
-//function toNullableInteger(value) {
-//  // 빈 값은 DB의 NULL로 저장
-//  if (value === null || value === undefined || value === '') {
-//    return null;
-//  }
-//
-//  const numberValue = Number(value);
-//
-//  return Number.isInteger(numberValue) ? numberValue : null;
-//}
-  
 function toNullableInteger(value) {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -1281,35 +1327,7 @@ function prepareTaskForSupabase(task) {
     updatedAt: task.updatedAt || new Date().toISOString()
   };
 }
-
   
-function toNullableNumber(value) {
-  // 빈 값은 DB의 NULL로 저장
-  if (value === null || value === undefined || value === '') {
-    return null;
-  }
-
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) ? numberValue : null;
-}
-
-function prepareTaskForSupabase(task) {
-  return {
-    ...task,
-
-    // quantity가 smallint/integer라면 숫자로 전달
-    quantity: toNullableInteger(task.quantity) ?? 1,
-
-    // 마스트 미입력 시 '' 대신 null 전달
-    mastCount: toNullableInteger(task.mastCount),
-    mastHeight: toNullableNumber(task.mastHeight),
-
-    // 항상 최신 수정시간 기록
-    updatedAt: task.updatedAt || new Date().toISOString()
-  };
-}
-
 // 로그 기록 함수
 async function writeTaskLog({
   action,
@@ -1557,6 +1575,14 @@ function updateAuthUIStatus() {
     adminTools.classList.add('hidden');
     document.getElementById('btn-admin-login').classList.remove('hidden');
   }
+
+	// 관리자일 때만 일정 필터 옆 "로그" 버튼 표시
+	const adminLogButton = document.getElementById('admin-log-button');
+	
+	if (adminLogButton) {
+	  adminLogButton.classList.toggle('hidden', !isAdmin);
+	}
+
 
   if (currentUser) {
     userBadge.classList.remove('hidden');
@@ -2579,6 +2605,241 @@ async function saveAllParsedTasks() {
 }
 
 // 카톡 일괄 저장 + 로그 기록
+
+// --- ADMIN TASK LOG VIEW ---
+function escapeHtml(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getLogActionLabel(action) {
+  const labels = {
+    CREATE: '등록',
+    UPDATE: '수정',
+    DELETE: '삭제'
+  };
+
+  return labels[action] || action || '기타';
+}
+
+function getLogActionStyle(action) {
+  const styles = {
+    CREATE: 'bg-emerald-100 text-emerald-700',
+    UPDATE: 'bg-sky-100 text-sky-700',
+    DELETE: 'bg-red-100 text-red-700'
+  };
+
+  return styles[action] || 'bg-slate-100 text-slate-600';
+}
+
+function formatLogDateTime(value) {
+  if (!value) {
+    return '-';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+}
+
+async function openTaskLogsModal() {
+  if (!isAdmin) {
+    alert('관리자만 작업 로그를 조회할 수 있습니다.');
+    return;
+  }
+
+  if (!supabaseClient) {
+    alert('Supabase 연결이 준비되지 않았습니다.');
+    return;
+  }
+
+  const modal = document.getElementById('task-logs-modal');
+  const list = document.getElementById('task-logs-list');
+  const count = document.getElementById('task-logs-count');
+
+  if (!modal || !list) {
+    alert('로그 조회 화면을 찾을 수 없습니다.');
+    return;
+  }
+
+  modal.classList.remove('hidden');
+
+  list.innerHTML = `
+    <div class="py-10 text-center text-xs text-slate-400">
+      로그를 불러오는 중입니다.
+    </div>
+  `;
+
+  if (count) {
+    count.innerText = '조회 중...';
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('task_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+
+    if (error) {
+      throw error;
+    }
+
+    const logs = data || [];
+
+    if (count) {
+      count.innerText = `최근 ${logs.length}건`;
+    }
+
+    if (logs.length === 0) {
+      list.innerHTML = `
+        <div class="py-12 text-center text-xs text-slate-400">
+          <i class="fa-regular fa-folder-open text-2xl mb-2 text-slate-300"></i>
+          <p>저장된 작업 로그가 없습니다.</p>
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = logs.map(log => {
+      const actionLabel = escapeHtml(getLogActionLabel(log.action));
+      const actionStyle = getLogActionStyle(log.action);
+
+      const siteName = escapeHtml(log.site_name || '현장명 없음');
+      const taskDate = escapeHtml(log.task_date || '-');
+      const region = escapeHtml(log.region || '-');
+      const workType = escapeHtml(log.work_type || '-');
+
+      const userName = escapeHtml(log.user_name || '알 수 없음');
+      const userPhone = escapeHtml(log.user_phone || '');
+      const message = escapeHtml(log.message || '-');
+      const createdAt = escapeHtml(formatLogDateTime(log.created_at));
+
+      const beforeData = log.before_data
+        ? escapeHtml(JSON.stringify(log.before_data, null, 2))
+        : '';
+
+      const afterData = log.after_data
+        ? escapeHtml(JSON.stringify(log.after_data, null, 2))
+        : '';
+
+      return `
+        <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-xs">
+          <div class="flex justify-between gap-2 items-start">
+            <div class="min-w-0">
+              <p class="font-extrabold text-xs text-slate-800 truncate">
+                ${siteName}
+              </p>
+
+              <p class="mt-0.5 text-[10px] text-slate-500">
+                ${taskDate} · ${region} · ${workType}
+              </p>
+            </div>
+
+            <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black ${actionStyle}">
+              ${actionLabel}
+            </span>
+          </div>
+
+          <div class="mt-2 pt-2 border-t border-slate-100">
+            <p class="text-[11px] text-slate-600">
+              ${message}
+            </p>
+
+            <div class="mt-1.5 flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-slate-400">
+              <span>
+                <i class="fa-regular fa-user mr-0.5"></i>
+                ${userName}${userPhone ? ` (${userPhone})` : ''}
+              </span>
+
+              <span>
+                <i class="fa-regular fa-clock mr-0.5"></i>
+                ${createdAt}
+              </span>
+            </div>
+          </div>
+
+          <details class="mt-2">
+            <summary class="cursor-pointer text-[10px] font-bold text-slate-400 hover:text-slate-600">
+              변경 상세 보기
+            </summary>
+
+            <div class="mt-2 space-y-2">
+              ${
+                beforeData
+                  ? `
+                    <div>
+                      <p class="mb-1 text-[10px] font-bold text-slate-500">변경 전</p>
+                      <pre class="max-h-28 overflow-auto rounded-lg bg-slate-900 p-2 text-[9px] leading-relaxed text-slate-200">${beforeData}</pre>
+                    </div>
+                  `
+                  : ''
+              }
+
+              ${
+                afterData
+                  ? `
+                    <div>
+                      <p class="mb-1 text-[10px] font-bold text-slate-500">변경 후</p>
+                      <pre class="max-h-28 overflow-auto rounded-lg bg-slate-900 p-2 text-[9px] leading-relaxed text-slate-200">${afterData}</pre>
+                    </div>
+                  `
+                  : ''
+              }
+            </div>
+          </details>
+        </div>
+      `;
+    }).join('');
+
+  } catch (error) {
+    console.error('작업 로그 조회 실패:', error);
+
+    if (count) {
+      count.innerText = '조회 실패';
+    }
+
+    list.innerHTML = `
+      <div class="py-10 text-center">
+        <i class="fa-solid fa-triangle-exclamation text-2xl text-red-400 mb-2"></i>
+        <p class="text-xs font-bold text-red-600">
+          로그를 불러오지 못했습니다.
+        </p>
+        <p class="mt-1 text-[10px] text-slate-400 break-all">
+          ${escapeHtml(error.message || 'task_logs 테이블 및 권한 정책을 확인하세요.')}
+        </p>
+      </div>
+    `;
+  }
+}
+
+function closeTaskLogsModal() {
+  const modal = document.getElementById('task-logs-modal');
+
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
 
 // --- EQUIPMENT UTILIZATION ANALYSIS ---
 function renderUtilizationView() {
