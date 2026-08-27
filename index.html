@@ -110,10 +110,20 @@ body {
 
     <!-- Auth Buttons & Admin Tools -->
     <div class="flex items-center gap-1">
+<!--
       <button id="btn-user-login" onclick="openUserAuthModal()" class="bg-sky-900 hover:bg-sky-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm">
         <i class="fa-solid fa-user text-[10px] text-amber-300"></i>
         <span id="txt-user-login-btn">로그인/가입</span>
       </button>
+-->
+			<button
+			  id="btn-user-logout-top"
+			  onclick="userLogout()"
+			  class="hidden bg-red-700 hover:bg-red-800 text-white text-xs p-2 rounded-lg font-semibold transition shadow-sm"
+			  title="사용자 로그아웃"
+			>
+			  <i class="fa-solid fa-right-from-bracket text-xs"></i>
+			</button>
 
       <button id="btn-admin-login" onclick="openAdminLoginModal()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs px-2 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 shadow-sm">
         <i class="fa-solid fa-lock text-[10px]"></i>
@@ -1714,6 +1724,7 @@ function updateAuthUIStatus() {
   const adminTools = document.getElementById('admin-active-tools');
   const loginBtnText = document.getElementById('txt-user-login-btn');
   const userLoginButton = document.getElementById('btn-user-login');
+	const userLogoutTopButton = document.getElementById('btn-user-logout-top');
   const adminLoginButton = document.getElementById('btn-admin-login');
   const adminLogButton = document.getElementById('admin-log-button');
 
@@ -1728,6 +1739,9 @@ function updateAuthUIStatus() {
     // 관리자 로그인 중에는 일반 사용자 로그인/가입 버튼 숨김
     if (userLoginButton) userLoginButton.classList.add('hidden');
 
+		// 관리자 로그인 중에는 일반 사용자 로그아웃도 숨김
+  	if (userLogoutTopButton) userLogoutTopButton.classList.add('hidden');
+  
     // 관리자만 로그 버튼 표시
     if (adminLogButton) adminLogButton.classList.remove('hidden');
 
@@ -1742,31 +1756,67 @@ function updateAuthUIStatus() {
   if (adminLogButton) adminLogButton.classList.add('hidden');
 
   // 3. 일반 사용자 로그인 상태
-  if (currentUser) {
-    const isApproved = !!currentUser.approved;
+//  if (currentUser) {
+//    const isApproved = !!currentUser.approved;
+//
+//    if (userBadge) {
+//      userBadge.classList.remove('hidden');
+//      userBadge.textContent = isApproved
+//        ? `${currentUser.name} (승인됨)`
+//        : `${currentUser.name} (대기중)`;
+//
+//      userBadge.className = isApproved
+//        ? 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-700 text-emerald-100'
+//        : 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-700 text-sky-100';
+//    }
+//
+//    if (loginBtnText) {
+//      loginBtnText.textContent = '내정보';
+//    }
+//
+//  } else {
+//    if (userBadge) userBadge.classList.add('hidden');
+//
+//    if (loginBtnText) {
+//      loginBtnText.textContent = '로그인/가입';
+//    }
+//  }
+	if (currentUser) {
+	  const isApproved = !!currentUser.approved;
+	
+	  if (userBadge) {
+	    userBadge.classList.remove('hidden');
+	    userBadge.textContent = isApproved
+	      ? `${currentUser.name} (승인됨)`
+	      : `${currentUser.name} (대기중)`;
+	
+	    userBadge.className = isApproved
+	      ? 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-700 text-emerald-100'
+	      : 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-700 text-sky-100';
+	  }
+	
+	  if (loginBtnText) {
+	    loginBtnText.textContent = '내정보';
+	  }
+	
+	  // 일반 사용자 로그인 시 로그아웃 버튼 표시
+	  if (userLogoutTopButton) {
+	    userLogoutTopButton.classList.remove('hidden');
+	  }
+	
+	} else {
+	  if (userBadge) userBadge.classList.add('hidden');
+	
+	  if (loginBtnText) {
+	    loginBtnText.textContent = '로그인/가입';
+	  }
+	
+	  // 미로그인 상태에서는 로그아웃 버튼 숨김
+	  if (userLogoutTopButton) {
+	    userLogoutTopButton.classList.add('hidden');
+	  }
+	}
 
-    if (userBadge) {
-      userBadge.classList.remove('hidden');
-      userBadge.textContent = isApproved
-        ? `${currentUser.name} (승인됨)`
-        : `${currentUser.name} (대기중)`;
-
-      userBadge.className = isApproved
-        ? 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-700 text-emerald-100'
-        : 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-700 text-sky-100';
-    }
-
-    if (loginBtnText) {
-      loginBtnText.textContent = '내정보';
-    }
-
-  } else {
-    if (userBadge) userBadge.classList.add('hidden');
-
-    if (loginBtnText) {
-      loginBtnText.textContent = '로그인/가입';
-    }
-  }
 }
 
 
@@ -1864,6 +1914,7 @@ function userLogout() {
   localStorage.removeItem('gukje_current_user');
   updateAuthUIStatus();
   closeUserAuthModal();
+  alert('로그아웃되었습니다.');
 }
 
 function openAdminLoginModal() {
