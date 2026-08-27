@@ -1857,20 +1857,45 @@ function renderCalendar() {
       return true;
     });
 
-    const cell = document.createElement('div');
-    cell.className = `p-1 border rounded-lg flex flex-col justify-between cursor-pointer transition hover:border-amber-400 ${isHoliday ? 'bg-red-50/30 border-red-100' : 'bg-white border-slate-100'} min-h-[68px] ${isFullscreen ? 'calendar-cell-fs' : ''}`;
-    cell.onclick = () => openDayDetailSheet(dateStr, dayTasks, holidayName);
+//    const cell = document.createElement('div');
+//    cell.className = `p-1 border rounded-lg flex flex-col justify-between cursor-pointer transition hover:border-amber-400 ${isHoliday ? 'bg-red-50/30 border-red-100' : 'bg-white border-slate-100'} min-h-[68px] ${isFullscreen ? 'calendar-cell-fs' : ''}`;
+//    cell.onclick = () => openDayDetailSheet(dateStr, dayTasks, holidayName);
+//
+//    const isToday = new Date().toISOString().split('T')[0] === dateStr;
 
-    const isToday = new Date().toISOString().split('T')[0] === dateStr;
+		const isToday = new Date().toISOString().split('T')[0] === dateStr;
+		
+		const cell = document.createElement('div');
+		
+		// 오늘 날짜면 칸 전체를 노란색으로 표시
+		let cellBackgroundClass = 'bg-white border-slate-100';
+		
+		if (isHoliday) {
+		  cellBackgroundClass = 'bg-red-50/30 border-red-100';
+		}
+		
+		if (isToday) {
+		  cellBackgroundClass = 'bg-amber-100 border-amber-400 ring-1 ring-amber-300';
+		}
+		
+		cell.className = `
+		  p-1 border rounded-lg flex flex-col justify-between cursor-pointer
+		  transition hover:border-amber-400
+		  ${cellBackgroundClass}
+		  min-h-[68px]
+		  ${isFullscreen ? 'calendar-cell-fs' : ''}
+		`;
+		
+		cell.onclick = () => openDayDetailSheet(dateStr, dayTasks, holidayName);
 
     // Font Color Logic
     let textColorClass = "text-slate-700";
     if (isHoliday) textColorClass = "text-red-600 font-black";
     else if (isSaturday) textColorClass = "text-blue-600 font-bold";
 
-    const dateNumClass = isToday 
-      ? "bg-amber-400 text-slate-900 rounded-full w-5 h-5 flex items-center justify-center font-black shadow-xs" 
-      : `font-bold ${textColorClass}`;
+		const dateNumClass = isToday
+		  ? "text-amber-950 font-black underline decoration-2 underline-offset-2"
+		  : `font-bold ${textColorClass}`;
 
     let taskBadgesHtml = '';
 
