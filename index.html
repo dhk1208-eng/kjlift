@@ -93,11 +93,17 @@ body {
         <i class="fa-solid fa-hard-hat"></i>
       </div>
       <div>
+<!--      	
         <div class="flex items-center gap-1.5">
           <h1 class="font-extrabold text-base leading-tight">국제산업렌탈</h1>
           <span id="admin-badge" class="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-slate-900 text-amber-400 hidden">ADMIN</span>
           <span id="user-auth-badge" class="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-900 text-sky-200 hidden">로그인됨</span>
         </div>
+-->
+				<div class="flex items-center gap-1.5">
+				  <h1 class="font-extrabold text-base leading-tight">국제산업렌탈</h1>
+				</div>
+        
         <p class="text-[10px] text-slate-800 font-medium">건설용리프트 설치·해체·인상 앱</p>
       </div>
     </div>
@@ -141,10 +147,47 @@ body {
   <!-- TAB 1: CALENDAR & LIST VIEW -->
   <section id="view-calendar" class="space-y-3">
     <!-- Cloud Status Bar -->
+<!--
     <div id="cloud-status-banner" class="bg-slate-900 text-amber-300 px-3 py-1.5 rounded-xl text-[11px] font-bold flex justify-between items-center shadow-xs">
       <span class="flex items-center gap-1.5"><i class="fa-solid fa-cloud text-sky-400"></i> <span id="cloud-status-text">로컬 저장소 동작 중</span></span>
       <span id="cloud-sync-indicator" class="text-[9px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-mono">OFFLINE</span>
     </div>
+-->
+		<div
+		  id="cloud-status-banner"
+		  class="bg-slate-900 text-amber-300 px-3 py-1.5 rounded-xl text-[11px] font-bold flex justify-between items-center shadow-xs"
+		>
+		  <span class="flex min-w-0 items-center gap-1.5">
+		    <i class="fa-solid fa-cloud text-sky-400"></i>
+		
+		    <!-- 로그인 상태: 관리자 또는 승인된 사용자 -->
+		    <span
+		      id="admin-badge"
+		      class="hidden shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-amber-400 text-slate-900"
+		    >
+		      ADMIN
+		    </span>
+		
+		    <span
+		      id="user-auth-badge"
+		      class="hidden shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-700 text-sky-100"
+		    >
+		      로그인됨
+		    </span>
+		
+		    <!-- 로그인 상태 배지 다음에 연결 상태 표시 -->
+		    <span id="cloud-status-text" class="truncate">
+		      로컬 저장소 동작 중
+		    </span>
+		  </span>
+		
+		  <span
+		    id="cloud-sync-indicator"
+		    class="ml-2 shrink-0 text-[9px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-mono"
+		  >
+		    OFFLINE
+		  </span>
+		</div>
 
     <!-- Quick Counter -->
     <div class="grid grid-cols-4 gap-1.5 text-center bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
@@ -1619,51 +1662,113 @@ function canEdit() {
   return false;
 }
 
+//function updateAuthUIStatus() {
+//  const adminBadge = document.getElementById('admin-badge');
+//  const userBadge = document.getElementById('user-auth-badge');
+//  const adminTools = document.getElementById('admin-active-tools');
+//  const loginBtnText = document.getElementById('txt-user-login-btn');
+//	const userLoginButton = document.getElementById('btn-user-login');
+//
+//  if (isAdmin) {
+//    adminBadge.classList.remove('hidden');
+//    adminTools.classList.remove('hidden');
+//    document.getElementById('btn-admin-login').classList.add('hidden');
+//    // 관리자 로그인 시 "로그인/가입" 버튼 숨김
+//    if (userLoginButton) {
+//      userLoginButton.classList.add('hidden');
+//    }
+//  } else {
+//    adminBadge.classList.add('hidden');
+//    adminTools.classList.add('hidden');
+//    document.getElementById('btn-admin-login').classList.remove('hidden');
+//    // 관리자 로그아웃 시 "로그인/가입" 버튼 다시 표시
+//    if (userLoginButton) {
+//      userLoginButton.classList.remove('hidden');
+//    }
+//  }
+//
+//	// 관리자일 때만 일정 필터 옆 "로그" 버튼 표시
+//	const adminLogButton = document.getElementById('admin-log-button');
+//	
+//	if (adminLogButton) {
+//	  adminLogButton.classList.toggle('hidden', !isAdmin);
+//	}
+//
+//
+//  if (currentUser) {
+//    userBadge.classList.remove('hidden');
+//    userBadge.innerText = currentUser.approved ? `${currentUser.name} (승인됨)` : `${currentUser.name} (대기중)`;
+//    userBadge.className = currentUser.approved ? 
+//      "px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-800 text-emerald-200" :
+//      "px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-900 text-sky-200";
+//    loginBtnText.innerText = "내정보";
+//  } else {
+//    userBadge.classList.add('hidden');
+//    loginBtnText.innerText = "로그인/가입";
+//  }
+//}
+
 function updateAuthUIStatus() {
   const adminBadge = document.getElementById('admin-badge');
   const userBadge = document.getElementById('user-auth-badge');
   const adminTools = document.getElementById('admin-active-tools');
   const loginBtnText = document.getElementById('txt-user-login-btn');
-	const userLoginButton = document.getElementById('btn-user-login');
+  const userLoginButton = document.getElementById('btn-user-login');
+  const adminLoginButton = document.getElementById('btn-admin-login');
+  const adminLogButton = document.getElementById('admin-log-button');
 
+  // 1. 관리자 로그인 상태
   if (isAdmin) {
-    adminBadge.classList.remove('hidden');
-    adminTools.classList.remove('hidden');
-    document.getElementById('btn-admin-login').classList.add('hidden');
-    // 관리자 로그인 시 "로그인/가입" 버튼 숨김
-    if (userLoginButton) {
-      userLoginButton.classList.add('hidden');
-    }
-  } else {
-    adminBadge.classList.add('hidden');
-    adminTools.classList.add('hidden');
-    document.getElementById('btn-admin-login').classList.remove('hidden');
-    // 관리자 로그아웃 시 "로그인/가입" 버튼 다시 표시
-    if (userLoginButton) {
-      userLoginButton.classList.remove('hidden');
-    }
+    if (adminBadge) adminBadge.classList.remove('hidden');
+    if (userBadge) userBadge.classList.add('hidden');
+
+    if (adminTools) adminTools.classList.remove('hidden');
+    if (adminLoginButton) adminLoginButton.classList.add('hidden');
+
+    // 관리자 로그인 중에는 일반 사용자 로그인/가입 버튼 숨김
+    if (userLoginButton) userLoginButton.classList.add('hidden');
+
+    // 관리자만 로그 버튼 표시
+    if (adminLogButton) adminLogButton.classList.remove('hidden');
+
+    return;
   }
 
-	// 관리자일 때만 일정 필터 옆 "로그" 버튼 표시
-	const adminLogButton = document.getElementById('admin-log-button');
-	
-	if (adminLogButton) {
-	  adminLogButton.classList.toggle('hidden', !isAdmin);
-	}
+  // 2. 관리자 로그아웃 상태
+  if (adminBadge) adminBadge.classList.add('hidden');
+  if (adminTools) adminTools.classList.add('hidden');
+  if (adminLoginButton) adminLoginButton.classList.remove('hidden');
+  if (userLoginButton) userLoginButton.classList.remove('hidden');
+  if (adminLogButton) adminLogButton.classList.add('hidden');
 
-
+  // 3. 일반 사용자 로그인 상태
   if (currentUser) {
-    userBadge.classList.remove('hidden');
-    userBadge.innerText = currentUser.approved ? `${currentUser.name} (승인됨)` : `${currentUser.name} (대기중)`;
-    userBadge.className = currentUser.approved ? 
-      "px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-800 text-emerald-200" :
-      "px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-900 text-sky-200";
-    loginBtnText.innerText = "내정보";
+    const isApproved = !!currentUser.approved;
+
+    if (userBadge) {
+      userBadge.classList.remove('hidden');
+      userBadge.textContent = isApproved
+        ? `${currentUser.name} (승인됨)`
+        : `${currentUser.name} (대기중)`;
+
+      userBadge.className = isApproved
+        ? 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-700 text-emerald-100'
+        : 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-700 text-sky-100';
+    }
+
+    if (loginBtnText) {
+      loginBtnText.textContent = '내정보';
+    }
+
   } else {
-    userBadge.classList.add('hidden');
-    loginBtnText.innerText = "로그인/가입";
+    if (userBadge) userBadge.classList.add('hidden');
+
+    if (loginBtnText) {
+      loginBtnText.textContent = '로그인/가입';
+    }
   }
 }
+
 
 function openUserAuthModal() {
   if (currentUser) {
