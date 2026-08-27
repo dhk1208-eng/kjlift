@@ -18,13 +18,6 @@
 <!-- SheetJS for Excel Download -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<!-- Firebase SDKs for Cloud Data Sharing -->
-<!--
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
--->
-
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -118,11 +111,6 @@ body {
         <button onclick="openTeamRegionManageModal()" class="bg-slate-800 text-amber-400 text-xs p-2 rounded-lg font-semibold transition" title="권역 및 25개팀 관리">
           <i class="fa-solid fa-people-roof text-xs"></i>
         </button>
-<!--Firebase
-        <button onclick="openCloudConfigModal()" class="bg-slate-800 text-sky-300 text-xs p-2 rounded-lg font-semibold transition" title="클라우드 동기화 설정">
-          <i class="fa-solid fa-cloud text-xs"></i>
-        </button>
--->        
         <button onclick="openUserPermissionManageModal()" class="bg-slate-800 text-amber-300 text-xs p-2 rounded-lg font-semibold transition relative" title="회원 관리">
           <i class="fa-solid fa-users-gear text-xs"></i>
           <span id="pending-users-count-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full hidden">0</span>
@@ -403,6 +391,22 @@ body {
       <i class="fa-solid fa-copy text-base mb-0.5"></i>
       <span class="text-[10px]">지역/주간요약</span>
     </button>
+    
+    
+    
+    
+<!-- 버전 표시: 이 위치에 추가 -->
+  <span
+    id="app-version"
+    class="ml-auto whitespace-nowrap text-[10px] font-bold tracking-tight text-slate-400"
+  >
+    Ver:로딩 중
+  </span>    
+    
+    
+    
+    
+    
   </div>
 </nav>
 
@@ -1087,6 +1091,7 @@ const HOLIDAYS = {
   "2040-10-03": "개천절",
   "2040-10-09": "한글날",
   "2040-12-25": "성탄절"
+
 };
 
 // Default Initial Team Setup (25 Teams per category across default regions)
@@ -1143,6 +1148,8 @@ let regionTeamData = generateDefaultTeams();
 
 // --- INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', () => {
+  //버젼
+  renderAppVersion();
   loadLocalState();
   initCloudIfConfigured();
   setupInitialDates();
@@ -1197,69 +1204,6 @@ function saveLocalState() {
   localStorage.setItem('gukje_teams', JSON.stringify(regionTeamData));
   localStorage.setItem('gukje_total_inventory', totalEquipmentInventory.toString());
 }
-
-//// --- CLOUD SYNC (FIREBASE FIRESTORE) ---
-//function initCloudIfConfigured() {
-//  const cfg = localStorage.getItem('gukje_firebase_config');
-//  if (!cfg) return;
-//
-//  try {
-//    const config = JSON.parse(cfg);
-//    if (!firebase.apps.length) {
-//      firebase.initializeApp(config);
-//    }
-//    db = firebase.firestore();
-//
-//    // Anonymous authentication
-//    firebase.auth().signInAnonymously().catch(err => console.error("Auth err:", err));
-//
-//    // Live Snapshot Listener
-//    db.collection("tasks").onSnapshot((snapshot) => {
-//      const cloudTasks = [];
-//      snapshot.forEach((doc) => {
-//        cloudTasks.push({ id: doc.id, ...doc.data() });
-//      });
-//      tasks = cloudTasks;
-//      saveLocalState();
-//      renderCalendar();
-//      updateQuickStats();
-//      renderUtilizationView();
-//    });
-//
-//    // Permission Listener
-//    db.collection("users").onSnapshot((snapshot) => {
-//      userPermissions = [];
-//      snapshot.forEach(doc => userPermissions.push({ id: doc.id, ...doc.data() }));
-//      updatePendingUserBadge();
-//      if (currentUser) {
-//        const found = userPermissions.find(u => u.name === currentUser.name && u.phone === currentUser.phone);
-//        if (found) {
-//          currentUser.approved = found.approved;
-//          localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
-//        }
-//      }
-//    });
-//
-//    isCloudConnected = true;
-//    document.getElementById('cloud-status-text').innerText = "클라우드 공유 실시간 연결됨";
-//    document.getElementById('cloud-sync-indicator').innerText = "ONLINE";
-//    document.getElementById('cloud-sync-indicator').className = "text-[9px] bg-emerald-600 px-2 py-0.5 rounded text-white font-mono";
-//  } catch (e) {
-//    console.error("Cloud init fail:", e);
-//  }
-//}
-//
-//function saveCloudTask(taskData) {
-//  if (!db || !isCloudConnected) return Promise.resolve();
-//  const docRef = taskData.id ? db.collection("tasks").doc(taskData.id) : db.collection("tasks").doc();
-//  taskData.id = docRef.id;
-//  return docRef.set(taskData, { merge: true });
-//}
-//
-//function deleteCloudTask(id) {
-//  if (!db || !isCloudConnected) return Promise.resolve();
-//  return db.collection("tasks").doc(id).delete();
-//}
 
 // --- CLOUD SYNC (SUPABASE) -------------------------------------
 async function initCloudIfConfigured() {
@@ -1464,38 +1408,6 @@ function closeUserAuthModal() {
   document.getElementById('user-auth-modal').classList.add('hidden');
 }
 
-//// Firebase ------------------------------------------------
-//function handleUserAuthSubmit() {
-//  const name = document.getElementById('auth-user-name').value.trim();
-//  const phone = document.getElementById('auth-user-phone').value.trim();
-//
-//  if (!name) {
-//    alert("성명을 입력해주세요.");
-//    return;
-//  }
-//
-//  currentUser = { name, phone, approved: false };
-//
-//  if (db && isCloudConnected) {
-//    const userDocId = `${name}_${phone}`.replace(/[^a-zA-Z0-9_]/g, '');
-//    db.collection("users").doc(userDocId).get().then(doc => {
-//      if (doc.exists) {
-//        currentUser.approved = doc.data().approved || false;
-//      } else {
-//        db.collection("users").doc(userDocId).set({ name, phone, approved: false, createdAt: new Date() });
-//      }
-//      localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
-//      updateAuthUIStatus();
-//      closeUserAuthModal();
-//    });
-//  } else {
-//    localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
-//    updateAuthUIStatus();
-//    closeUserAuthModal();
-//  }
-//}
-//// Firebase ------------------------------------------------
-
 // Supabase ------------------------------------------------
 async function handleUserAuthSubmit() {
   const name = document.getElementById('auth-user-name').value.trim();
@@ -1506,52 +1418,67 @@ async function handleUserAuthSubmit() {
     return;
   }
 
-  const userId = `${name}_${phone}`.replace(/[^a-zA-Z0-9_가-힣]/g, '');
+  if (!supabaseClient) {
+    alert(
+      'Supabase 연결 정보가 초기화되지 않았습니다.\n' +
+      'SUPABASE_URL 및 SUPABASE_ANON_KEY 설정을 확인하세요.'
+    );
+    return;
+  }
+
+  const userKey = `${name}_${phone}`.replace(/[^a-zA-Z0-9_가-힣]/g, '');
 
   try {
-    if (isCloudConnected) {
-      const { data: existingUser, error: findError } = await supabaseClient
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+    // 1. 기존 가입 사용자 확인
+    const { data: existingUser, error: findError } = await supabaseClient
+      .from('users')
+      .select('*')
+      .eq('user_key', userKey)
+      .maybeSingle();
 
-      if (findError) throw findError;
-
-      if (existingUser) {
-        currentUser = {
-          name: existingUser.name,
-          phone: existingUser.phone,
-          approved: !!existingUser.approved
-        };
-      } else {
-        const newUser = {
-          id: userId,
-          name,
-          phone,
-          approved: false,
-          createdAt: new Date().toISOString()
-        };
-
-        const { data, error: insertError } = await supabaseClient
-          .from('users')
-          .insert(newUser)
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-
-        currentUser = {
-          name: data.name,
-          phone: data.phone,
-          approved: !!data.approved
-        };
-      }
-    } else {
-      currentUser = { name, phone, approved: false };
+    if (findError) {
+      throw findError;
     }
 
-    localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
+    let savedUser;
+
+    if (existingUser) {
+      // 이미 가입된 사용자면 기존 승인 상태를 사용
+      savedUser = existingUser;
+    } else {
+      // 2. 신규 사용자를 Supabase DB에 저장
+      const { data, error: insertError } = await supabaseClient
+        .from('users')
+        .insert([
+          {
+            user_key: userKey,
+            name: name,
+            phone: phone,
+            approved: false
+          }
+        ])
+        .select()
+        .single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      savedUser = data;
+    }
+
+    // 3. DB 저장 성공 이후에만 브라우저 로그인 정보 저장
+    currentUser = {
+      userKey: savedUser.user_key,
+      name: savedUser.name,
+      phone: savedUser.phone,
+      approved: !!savedUser.approved
+    };
+
+    localStorage.setItem(
+      'gukje_current_user',
+      JSON.stringify(currentUser)
+    );
 
     updateAuthUIStatus();
     closeUserAuthModal();
@@ -1561,11 +1488,20 @@ async function handleUserAuthSubmit() {
         ? '로그인되었습니다. 일정 등록 및 수정이 가능합니다.'
         : '회원가입이 완료되었습니다. 관리자 승인 후 일정 등록 및 수정이 가능합니다.'
     );
+
+    // 관리자 화면의 회원 목록도 갱신
+    await loadUsersFromSupabase();
+
   } catch (error) {
-    console.error('회원가입/로그인 오류:', error);
-    alert(`회원가입 또는 로그인에 실패했습니다.\n${error.message}`);
+    console.error('회원가입 또는 로그인 오류:', error);
+
+    alert(
+      '회원가입 또는 로그인에 실패했습니다.\n\n' +
+      `${error.message || 'Supabase users 테이블 및 RLS 정책을 확인하세요.'}`
+    );
   }
 }
+
 // Supabase ------------------------------------------------
 
 function userLogout() {
@@ -2028,25 +1964,6 @@ function closeDuplicateWarningModal() {
   document.getElementById('duplicate-warning-modal').classList.add('hidden');
 }
 
-//// Firebase ---------------------------------------------------
-//function executeTaskSave(taskData) {
-//  const existingIndex = tasks.findIndex(t => t.id === taskData.id);
-//  if (existingIndex >= 0) {
-//    tasks[existingIndex] = taskData;
-//  } else {
-//    tasks.push(taskData);
-//  }
-//
-//  saveLocalState();
-//  saveCloudTask(taskData);
-//
-//  closeModal();
-//  renderCalendar();
-//  updateQuickStats();
-//  renderUtilizationView();
-//}
-//// Firebase ---------------------------------------------------
-
 // Supabase ---------------------------------------------------
 async function executeTaskSave(taskData) {
   try {
@@ -2102,24 +2019,6 @@ async function executeTaskSave(taskData) {
   }
 }
 // Supabase ---------------------------------------------------
-
-//// Firebase ---------------------------------------------------
-//function deleteCurrentTask() {
-//  const id = document.getElementById('task-id').value;
-//  if (!id) return;
-//
-//  if (confirm("정말 이 일정을 삭제하시겠습니까?")) {
-//    tasks = tasks.filter(t => t.id !== id);
-//    saveLocalState();
-//    deleteCloudTask(id);
-//
-//    closeModal();
-//    renderCalendar();
-//    updateQuickStats();
-//    renderUtilizationView();
-//  }
-//}
-//// Firebase ---------------------------------------------------
 
 // Supabase ---------------------------------------------------
 async function deleteCurrentTask() {
@@ -2605,48 +2504,9 @@ function resetTeamsToDefault() {
   }
 }
 
-//// Firebase--------------------------------------
-//function openCloudConfigModal() {
-//  const cfg = localStorage.getItem('gukje_firebase_config');
-//  if (cfg) {
-//    try {
-//      const parsed = JSON.parse(cfg);
-//      document.getElementById('cfg-apiKey').value = parsed.apiKey || '';
-//      document.getElementById('cfg-projectId').value = parsed.projectId || '';
-//      document.getElementById('cfg-appId').value = parsed.appId || '';
-//    } catch (e) {}
-//  }
-//  document.getElementById('cloud-config-modal').classList.remove('hidden');
-//}
-//// Firebase--------------------------------------
-
 function closeCloudConfigModal() {
   document.getElementById('cloud-config-modal').classList.add('hidden');
 }
-
-// Firebase--------------------------------------
-//function saveCloudConfig() {
-//  const apiKey = document.getElementById('cfg-apiKey').value.trim();
-//  const projectId = document.getElementById('cfg-projectId').value.trim();
-//  const appId = document.getElementById('cfg-appId').value.trim();
-//
-//  if (!apiKey || !projectId) {
-//    alert("API Key와 Project ID는 필수입니다.");
-//    return;
-//  }
-//
-//  const config = { apiKey, projectId, appId, authDomain: `${projectId}.firebaseapp.com` };
-//  localStorage.setItem('gukje_firebase_config', JSON.stringify(config));
-//  closeCloudConfigModal();
-//  location.reload();
-//}
-
-//function disconnectCloud() {
-//  localStorage.removeItem('gukje_firebase_config');
-//  closeCloudConfigModal();
-//  location.reload();
-//}
-//// Firebase--------------------------------------
 
 function openUserPermissionManageModal() {
   renderUserPermissionList();
@@ -2675,16 +2535,6 @@ function renderUserPermissionList() {
     `).join('');
   }
 }
-
-//// Firebase ----------------------------------
-//function toggleUserApproval(userId, newApproved) {
-//  if (db && isCloudConnected) {
-//    db.collection("users").doc(userId).update({ approved: newApproved }).then(() => {
-//      renderUserPermissionList();
-//    });
-//  }
-//}
-//// Firebase ----------------------------------
 
 // Supabase ----------------------------------
 async function toggleUserApproval(userId, newApproved) {
@@ -2742,6 +2592,30 @@ function switchTab(tabName) {
     generateWeeklySummaryText();
   }
 }
+
+//버젼
+function getAppVersion() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  const hour = String(now.getHours()).padStart(2, '0');
+  const minute = String(now.getMinutes()).padStart(2, '0');
+
+  return `${year}${month}${day}-${hour}${minute}`;
+}
+
+function renderAppVersion() {
+  const versionEl = document.getElementById('app-version');
+
+  if (versionEl) {
+    versionEl.textContent = `Ver:${getAppVersion()}`;
+  }
+}
+
+
 </script>
 </body>
 </html>
