@@ -1132,8 +1132,6 @@ let regionTeamData = generateDefaultTeams();
 
 // --- INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', () => {
-  //버젼
-//  renderAppVersion();
   loadLocalState();
   initCloudIfConfigured();
   setupInitialDates();
@@ -2576,29 +2574,6 @@ function switchTab(tabName) {
     generateWeeklySummaryText();
   }
 }
-
-//버젼
-//function getAppVersion() {
-//  const now = new Date();
-//
-//  const year = now.getFullYear();
-//  const month = String(now.getMonth() + 1).padStart(2, '0');
-//  const day = String(now.getDate()).padStart(2, '0');
-//
-//  const hour = String(now.getHours()).padStart(2, '0');
-//  const minute = String(now.getMinutes()).padStart(2, '0');
-//
-//  return `${year}${month}${day}-${hour}${minute}`;
-//}
-//
-//function renderAppVersion() {
-//  const versionEl = document.getElementById('app-version');
-//
-//  if (versionEl) {
-//    versionEl.textContent = `Ver:${getAppVersion()}`;
-//  }
-//}
-
 
 </script>
 </body>
