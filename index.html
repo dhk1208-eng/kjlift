@@ -3514,24 +3514,25 @@ function resetTeamsToDefault() {
 
 
 /* 회원 관리 모달 열기 */
-async function openUserPermissionManageModal() {
-  if (!isAdmin) {
-    alert('회원 관리는 관리자만 사용할 수 있습니다.');
-    return;
-  }
 
-  const modal = document.getElementById('user-permission-manage-modal');
-
-  if (!modal) {
-    alert('회원 관리 모달을 찾을 수 없습니다.');
-    console.error('user-permission-manage-modal 요소가 없습니다.');
-    return;
-  }
-
-  modal.classList.remove('hidden');
-
-  await loadUsersForPermissionManagement();
-}
+//async function openUserPermissionManageModal() {
+//  if (!isAdmin) {
+//    alert('회원 관리는 관리자만 사용할 수 있습니다.');
+//    return;
+//  }
+//
+//  const modal = document.getElementById('user-permission-manage-modal');
+//
+//  if (!modal) {
+//    alert('회원 관리 모달을 찾을 수 없습니다.');
+//    console.error('user-permission-manage-modal 요소가 없습니다.');
+//    return;
+//  }
+//
+//  modal.classList.remove('hidden');
+//
+//  await loadUsersForPermissionManagement();
+//}
 
 
 /* 회원 관리 모달 닫기 */
@@ -3909,12 +3910,37 @@ function switchTab(tabName) {
 //  await loadUsersForMemberManagement();
 //}
 
-function closeMemberManagementModal() {
-  document
-    .getElementById('member-management-modal')
-    .classList.add('hidden');
+async function openMemberManagementModal() {
+  if (!isAdmin) {
+    alert('회원 관리는 관리자만 사용할 수 있습니다.');
+    return;
+  }
+
+  const modal = document.getElementById('member-management-modal');
+
+  if (!modal) {
+    alert('회원 관리 팝업을 찾을 수 없습니다.');
+    return;
+  }
+
+  modal.classList.remove('hidden');
+
+  await loadUsersForMemberManagement();
 }
 
+//function closeMemberManagementModal() {
+//  document
+//    .getElementById('member-management-modal')
+//    .classList.add('hidden');
+//}
+
+function closeMemberManagementModal() {
+  const modal = document.getElementById('member-management-modal');
+
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
 
 async function loadUsersForMemberManagement() {
   if (!isAdmin) {
