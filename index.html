@@ -743,7 +743,7 @@ body {
 			  <input
 			    type="text"
 			    id="input-admin-username"
-			    value=""
+			    value="admin"
 			    autocomplete="username"
 			    placeholder="관리자 아이디"
 			    class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono"
@@ -2166,7 +2166,7 @@ function userLogout() {
 }
 
 function openAdminLoginModal() {
-  document.getElementById('input-admin-username').value = 'admin';
+  document.getElementById('input-admin-username').value = '';
   document.getElementById('input-admin-pw').value = '';
   document.getElementById('admin-login-modal').classList.remove('hidden');
 }
