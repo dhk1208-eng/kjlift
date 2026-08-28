@@ -538,6 +538,7 @@ body {
 </nav>
 
 <!-- User Login & Signup Modal -->
+<!--
 <div id="user-auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden flex flex-col">
     <div class="p-3 bg-sky-900 text-white flex justify-between items-center">
@@ -546,29 +547,6 @@ body {
       </h3>
       <button onclick="closeUserAuthModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
     </div>
-
-
-<!--
-    <div class="p-4 space-y-3 text-xs">
-      <div>
-        <label class="font-bold text-slate-700 block mb-1">성명 (이름) *</label>
-        <input type="text" id="auth-user-name" placeholder="예: 홍길동" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-bold">
-      </div>
-      <div>
-        <label class="font-bold text-slate-700 block mb-1">전화번호 (휴대폰)</label>
-        <input type="tel" id="auth-user-phone" placeholder="예: 01012345678" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono">
-      </div>
-      <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
-        <p class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
-          <i class="fa-solid fa-shield-halved text-amber-600"></i> 회원가입 승인 안내
-        </p>
-        <p class="text-[10px] text-slate-600 leading-relaxed">
-          신규 가입 시 <b class="text-red-600">[관리자 승인 대기 / 읽기 전용]</b> 상태로 시작됩니다. 최고관리자가 승인해야 일정 등록 및 수정을 할 수 있습니다.
-        </p>
-      </div>
-    </div>
--->
-
 		<div class="p-4 space-y-3 text-xs">
 		  <div>
 		    <label class="font-bold text-slate-700 block mb-1">성명 (회원가입 시 필수)</label>
@@ -628,15 +606,169 @@ body {
       <button id="btn-user-logout" onclick="userLogout()" class="px-3 py-1.5 text-xs bg-red-100 text-red-700 font-bold rounded-lg hidden">로그아웃</button>
       <div class="flex gap-1.5 ml-auto">
         <button onclick="closeUserAuthModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
-<!--        
-        <button onclick="handleUserAuthSubmit()" class="px-4 py-1.5 text-xs bg-sky-900 text-white font-bold rounded-lg shadow-xs">가입 / 로그인</button>
--->
 				<button onclick="loginUserFromTable()"  class="px-3 py-1.5 text-xs bg-sky-900 text-white font-bold rounded-lg shadow-xs">로그인</button>
 				<button onclick="registerUserToTable()" class="px-3 py-1.5 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">회원가입</button>
       </div>
     </div>
   </div>
 </div>
+-->
+<!-- 사용자 로그인 / 회원가입 모달 -->
+<div
+  id="user-auth-modal"
+  class="fixed inset-0 z-50 hidden bg-slate-900/50 flex items-center justify-center p-4"
+>
+  <div class="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-2xl">
+    <!-- 헤더 -->
+    <div class="bg-sky-900 text-white px-4 py-3 flex justify-between items-center">
+      <h3 id="user-auth-title" class="font-bold text-sm">
+        <i class="fa-solid fa-user-lock text-amber-300 mr-1"></i>
+        사용자 로그인
+      </h3>
+
+      <button
+        type="button"
+        onclick="closeUserAuthModal()"
+        class="text-white/80 hover:text-white"
+        aria-label="닫기"
+      >
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- 로그인 화면 -->
+    <div id="login-form-panel" class="p-5 space-y-4">
+      <div>
+        <label class="font-bold text-slate-700 block mb-1 text-xs">
+          아이디
+        </label>
+        <input
+          type="text"
+          id="auth-login-username"
+          autocomplete="username"
+          placeholder="아이디 입력"
+          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-sky-700"
+        >
+      </div>
+
+      <div>
+        <label class="font-bold text-slate-700 block mb-1 text-xs">
+          비밀번호
+        </label>
+        <input
+          type="password"
+          id="auth-login-password"
+          autocomplete="current-password"
+          placeholder="비밀번호 입력"
+          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-sky-700"
+        >
+      </div>
+
+      <button
+        type="button"
+        onclick="loginUserFromTable()"
+        class="w-full py-2.5 bg-sky-900 text-white font-bold rounded-lg text-sm hover:bg-sky-800"
+      >
+        로그인
+      </button>
+
+      <div class="border-t border-slate-200 pt-4 text-center">
+        <p class="text-xs text-slate-500 mb-2">아직 계정이 없으신가요?</p>
+        <button
+          type="button"
+          onclick="showAuthMode('signup')"
+          class="text-sm font-bold text-emerald-600 hover:text-emerald-700 underline"
+        >
+          회원가입
+        </button>
+      </div>
+    </div>
+
+    <!-- 회원가입 화면 -->
+    <div id="signup-form-panel" class="hidden p-5 space-y-3">
+      <div>
+        <label class="font-bold text-slate-700 block mb-1 text-xs">
+          성명 *
+        </label>
+        <input
+          type="text"
+          id="auth-signup-name"
+          placeholder="예: 홍길동"
+          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none text-sm focus:border-emerald-600"
+        >
+      </div>
+
+      <div>
+        <label class="font-bold text-slate-700 block mb-1 text-xs">
+          연락처 *
+        </label>
+        <input
+          type="tel"
+          id="auth-signup-phone"
+          placeholder="예: 01012345678"
+          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-emerald-600"
+        >
+      </div>
+
+      <div>
+        <label class="font-bold text-slate-700 block mb-1 text-xs">
+          아이디 *
+        </label>
+        <input
+          type="text"
+          id="auth-signup-username"
+          autocomplete="username"
+          placeholder="영문, 숫자 조합 아이디"
+          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-emerald-600"
+        >
+      </div>
+
+      <div>
+        <label class="font-bold text-slate-700 block mb-1 text-xs">
+          비밀번호 *
+        </label>
+        <input
+          type="password"
+          id="auth-signup-password"
+          autocomplete="new-password"
+          placeholder="비밀번호 4자 이상"
+          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-emerald-600"
+        >
+      </div>
+
+      <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+        <p class="text-[11px] font-bold text-amber-900 mb-1">
+          <i class="fa-solid fa-shield-halved text-amber-600"></i>
+          회원가입 승인 안내
+        </p>
+        <p class="text-[10px] text-slate-600 leading-relaxed">
+          회원가입 후에는 관리자 승인 대기 상태가 됩니다.
+          관리자 승인 후 일정 등록 및 수정이 가능합니다.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onclick="registerUserToTable()"
+        class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-lg text-sm hover:bg-emerald-700"
+      >
+        회원가입 완료
+      </button>
+
+      <div class="text-center pt-1">
+        <button
+          type="button"
+          onclick="showAuthMode('login')"
+          class="text-xs font-bold text-sky-800 hover:underline"
+        >
+          <i class="fa-solid fa-arrow-left mr-1"></i>
+          로그인으로 돌아가기
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- Admin Login Modal -->
 <div id="admin-login-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-4 hidden">
@@ -1835,20 +1967,6 @@ function updateAuthUIStatus() {
 
 /*
 function openUserAuthModal() {
-  if (currentUser) {
-    document.getElementById('auth-user-name').value = currentUser.name || '';
-    document.getElementById('auth-user-phone').value = currentUser.phone || '';
-    document.getElementById('btn-user-logout').classList.remove('hidden');
-  } else {
-    document.getElementById('auth-user-name').value = '';
-    document.getElementById('auth-user-phone').value = '';
-    document.getElementById('btn-user-logout').classList.add('hidden');
-  }
-  document.getElementById('user-auth-modal').classList.remove('hidden');
-}
-*/
-
-function openUserAuthModal() {
   const nameInput = document.getElementById('auth-user-name');
   const phoneInput = document.getElementById('auth-user-phone');
   const usernameInput = document.getElementById('auth-user-username');
@@ -1881,83 +1999,52 @@ function openUserAuthModal() {
 
   document.getElementById('user-auth-modal').classList.remove('hidden');
 }
+*/
+/*
+function closeUserAuthModal() {
+  document.getElementById('user-auth-modal').classList.add('hidden');
+}
+*/
+
+function openUserAuthModal() {
+  showAuthMode('login');
+
+  document.getElementById('auth-login-username').value = '';
+  document.getElementById('auth-login-password').value = '';
+
+  document.getElementById('user-auth-modal').classList.remove('hidden');
+}
 
 function closeUserAuthModal() {
   document.getElementById('user-auth-modal').classList.add('hidden');
 }
 
-// Supabase ------------------------------------------------
-/*
-async function handleUserAuthSubmit() {
-  const name = document.getElementById('auth-user-name').value.trim();
-  const phone = document.getElementById('auth-user-phone').value.trim();
+function showAuthMode(mode) {
+  const loginPanel = document.getElementById('login-form-panel');
+  const signupPanel = document.getElementById('signup-form-panel');
+  const title = document.getElementById('user-auth-title');
 
-  if (!name) {
-    alert('성명을 입력해주세요.');
-    return;
-  }
+  if (mode === 'signup') {
+    loginPanel.classList.add('hidden');
+    signupPanel.classList.remove('hidden');
 
-  const userId = `${name}_${phone}`.replace(/[^a-zA-Z0-9_가-힣]/g, '');
+    title.innerHTML = `
+      <i class="fa-solid fa-user-plus text-amber-300 mr-1"></i>
+      회원가입
+    `;
+  } else {
+    signupPanel.classList.add('hidden');
+    loginPanel.classList.remove('hidden');
 
-  try {
-    if (isCloudConnected) {
-      const { data: existingUser, error: findError } = await supabaseClient
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (findError) throw findError;
-
-      if (existingUser) {
-        currentUser = {
-          name: existingUser.name,
-          phone: existingUser.phone,
-          approved: !!existingUser.approved
-        };
-      } else {
-        const newUser = {
-          id: userId,
-          name,
-          phone,
-          approved: false,
-          createdAt: new Date().toISOString()
-        };
-
-        const { data, error: insertError } = await supabaseClient
-          .from('users')
-          .insert(newUser)
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-
-        currentUser = {
-          name: data.name,
-          phone: data.phone,
-          approved: !!data.approved
-        };
-      }
-    } else {
-      currentUser = { name, phone, approved: false };
-    }
-
-    localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
-
-    updateAuthUIStatus();
-    closeUserAuthModal();
-
-    alert(
-      currentUser.approved
-        ? '로그인되었습니다. 일정 등록 및 수정이 가능합니다.'
-        : '회원가입이 완료되었습니다. 관리자 승인 후 일정 등록 및 수정이 가능합니다.'
-    );
-  } catch (error) {
-    console.error('회원가입/로그인 오류:', error);
-    alert(`회원가입 또는 로그인에 실패했습니다.\n${error.message}`);
+    title.innerHTML = `
+      <i class="fa-solid fa-user-lock text-amber-300 mr-1"></i>
+      사용자 로그인
+    `;
   }
 }
-*/
+
+// Supabase ------------------------------------------------
+/*
 async function loginUserFromTable() {
   const username = document.getElementById('auth-user-username').value.trim();
   const password = document.getElementById('auth-user-password').value;
@@ -2019,8 +2106,70 @@ async function loginUserFromTable() {
     alert(`로그인에 실패했습니다.\n${error.message || '인증 정보를 확인해주세요.'}`);
   }
 }
+*/
+async function loginUserFromTable() {
+  const username = document.getElementById('auth-login-username').value.trim();
+  const password = document.getElementById('auth-login-password').value;
 
+  if (!username || !password) {
+    alert('아이디와 비밀번호를 입력해주세요.');
+    return;
+  }
 
+  if (!supabaseClient) {
+    alert('Supabase 연결이 준비되지 않았습니다.');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('authenticate_app_user', {
+      p_username: username,
+      p_password: password
+    });
+
+    if (error) throw error;
+
+    const user = Array.isArray(data) ? data[0] : data;
+
+    if (!user) {
+      alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    if (user.role === 'admin') {
+      alert('관리자 계정은 관리자 로그인 메뉴를 이용해주세요.');
+      return;
+    }
+
+    currentUser = {
+      userKey: user.user_key,
+      name: user.name,
+      phone: user.phone || '',
+      username: user.username,
+      role: user.role,
+      approved: Boolean(user.approved)
+    };
+
+    localStorage.setItem(
+      'gukje_current_user',
+      JSON.stringify(currentUser)
+    );
+
+    updateAuthUIStatus();
+    closeUserAuthModal();
+
+    if (currentUser.approved) {
+      alert(`${currentUser.name}님, 로그인되었습니다.\n일정 등록 및 수정이 가능합니다.`);
+    } else {
+      alert(`${currentUser.name}님, 로그인되었습니다.\n현재 관리자 승인 대기 상태입니다.`);
+    }
+  } catch (error) {
+    console.error('사용자 로그인 오류:', error);
+    alert(`로그인에 실패했습니다.\n${error.message || '인증 정보를 확인해주세요.'}`);
+  }
+}
+
+/*
 async function registerUserToTable() {
   const name = document.getElementById('auth-user-name').value.trim();
   const phone = document.getElementById('auth-user-phone').value.trim();
@@ -2073,6 +2222,75 @@ async function registerUserToTable() {
 
     alert(
       '회원가입이 완료되었습니다.\n관리자 승인 후 일정 등록 및 수정이 가능합니다.'
+    );
+  } catch (error) {
+    console.error('회원가입 오류:', error);
+    alert(`회원가입에 실패했습니다.\n${error.message || '입력 정보를 확인해주세요.'}`);
+  }
+}
+*/
+async function registerUserToTable() {
+  const name = document.getElementById('auth-signup-name').value.trim();
+  const phone = document.getElementById('auth-signup-phone').value.trim();
+  const username = document.getElementById('auth-signup-username').value.trim();
+  const password = document.getElementById('auth-signup-password').value;
+
+  if (!name || !phone || !username || !password) {
+    alert('성명, 연락처, 아이디, 비밀번호를 모두 입력해주세요.');
+    return;
+  }
+
+  if (username.length < 4) {
+    alert('아이디는 4자 이상 입력해주세요.');
+    return;
+  }
+
+  if (password.length < 4) {
+    alert('비밀번호는 4자 이상 입력해주세요.');
+    return;
+  }
+
+  if (!supabaseClient) {
+    alert('Supabase 연결이 준비되지 않았습니다.');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('register_app_user', {
+      p_name: name,
+      p_phone: phone,
+      p_username: username,
+      p_password: password
+    });
+
+    if (error) throw error;
+
+    const user = Array.isArray(data) ? data[0] : data;
+
+    if (!user) {
+      throw new Error('회원가입 결과를 확인할 수 없습니다.');
+    }
+
+    currentUser = {
+      userKey: user.user_key,
+      name: user.name,
+      phone: user.phone || '',
+      username: user.username,
+      role: user.role,
+      approved: Boolean(user.approved)
+    };
+
+    localStorage.setItem(
+      'gukje_current_user',
+      JSON.stringify(currentUser)
+    );
+
+    updateAuthUIStatus();
+    closeUserAuthModal();
+
+    alert(
+      `${currentUser.name}님, 회원가입이 완료되었습니다.\n` +
+      '관리자 승인 후 일정 등록 및 수정이 가능합니다.'
     );
   } catch (error) {
     console.error('회원가입 오류:', error);
