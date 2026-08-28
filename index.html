@@ -4000,11 +4000,18 @@ async function loadUsersForMemberManagement() {
       throw error;
     }
 
-    // 관리자 계정만 제외합니다.
-    // role이 비어 있는 기존 회원도 목록에 표시합니다.
-    userPermissions = (data || []).filter((user) => {
-      return String(user.role || '').toLowerCase() !== 'admin';
-    });
+//    // 관리자 계정만 제외합니다.
+//    // role이 비어 있는 기존 회원도 목록에 표시합니다.
+//    userPermissions = (data || []).filter((user) => {
+//      return String(user.role || '').toLowerCase() !== 'admin';
+//    });
+		// 현재 로그인한 관리자 본인만 목록에서 제외합니다.
+		// DB에 role 값이 잘못 저장된 기존 회원도 모두 표시되도록
+		// role 값으로 회원을 일괄 제외하지 않습니다.
+		userPermissions = (data || []).filter((user) => {
+		  return String(user.user_key) !== String(currentUser?.userKey || '');
+		});
+
 
     renderMemberManagementList(userPermissions);
     updatePendingUserBadge();
@@ -4108,10 +4115,16 @@ async function changeMemberApproval(userKey, nextApproved) {
     return;
   }
 
-  if (String(targetUser.role || '').toLowerCase() === 'admin') {
-    alert('관리자 계정은 승인 상태를 변경할 수 없습니다.');
-    return;
-  }
+//  if (String(targetUser.role || '').toLowerCase() === 'admin') {
+//    alert('관리자 계정은 승인 상태를 변경할 수 없습니다.');
+//    return;
+//  }
+
+	// 현재 로그인한 관리자 본인의 승인 상태만 변경하지 못하게 합니다.
+	if (String(targetUser.user_key) === String(currentUser?.userKey || '')) {
+	  alert('현재 로그인한 관리자 계정은 승인 상태를 변경할 수 없습니다.');
+	  return;
+	}
 
   const actionName = nextApproved ? '승인' : '승인 취소';
 
