@@ -239,27 +239,7 @@ body {
 		    <p id="stat-jacking" class="text-xs leading-tight font-bold text-amber-700">0</p>
 		  </div>
 		</div>
-    
-<!--
-    <div class="grid grid-cols-4 gap-1.5 text-center bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-      <div class="p-1 rounded-lg bg-slate-50">
-        <p class="text-[10px] text-slate-500 font-semibold">전체</p>
-        <p id="stat-total" class="text-sm font-bold text-slate-800">0</p>
-      </div>
-      <div class="p-1 rounded-lg bg-sky-50">
-        <p class="text-[10px] text-sky-600 font-semibold">설치</p>
-        <p id="stat-install" class="text-sm font-bold text-sky-700">0</p>
-      </div>
-      <div class="p-1 rounded-lg bg-red-50">
-        <p class="text-[10px] text-red-600 font-semibold">해체</p>
-        <p id="stat-dismantle" class="text-sm font-bold text-red-700">0</p>
-      </div>
-      <div class="p-1 rounded-lg bg-amber-50">
-        <p class="text-[10px] text-amber-600 font-semibold">인상</p>
-        <p id="stat-jacking" class="text-sm font-bold text-amber-700">0</p>
-      </div>
-    </div>
--->
+   
     <!-- Controls & Filter Bar -->
     <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs space-y-2">
       <div class="flex justify-between items-center flex-wrap gap-1">
@@ -498,35 +478,6 @@ body {
 
 <!-- Mobile Bottom Navigation Bar -->
 <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 shadow-lg z-30 pb-safe" id="bottom-nav">
-<!--
-  <div class="max-w-md mx-auto grid grid-cols-4 text-center py-1.5" id="bottom-nav-container">
-    <button id="nav-calendar" onclick="switchTab('calendar')" class="flex flex-col items-center justify-center py-1 text-amber-600 font-bold">
-      <i class="fa-regular fa-calendar-days text-base mb-0.5"></i>
-      <span class="text-[10px]">일정표</span>
-    </button>
-    <button id="nav-extractor" onclick="switchTab('extractor')" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
-      <i class="fa-solid fa-comments text-base mb-0.5"></i>
-      <span class="text-[10px]">카톡추출</span>
-    </button>
-    <button id="nav-utilization" onclick="switchTab('utilization')" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
-      <i class="fa-solid fa-chart-pie text-base mb-0.5"></i>
-      <span class="text-[10px]">가동률</span>
-    </button>
-    <button id="nav-summary" onclick="switchTab('summary')" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
-      <i class="fa-solid fa-copy text-base mb-0.5"></i>
-      <span class="text-[10px]">지역/주간요약</span>
-    </button>
-  </div>
-
-  <div class="max-w-md mx-auto pb-1 text-center">
-    <span
-      id="app-version"
-      class="whitespace-nowrap text-[10px] font-bold leading-none text-slate-300"
-    > Ver:로딩 중
-    </span>
-  </div>
--->
-
 
 <div
   class="max-w-md mx-auto grid grid-cols-4 text-center py-1"
@@ -595,6 +546,9 @@ body {
       </h3>
       <button onclick="closeUserAuthModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
     </div>
+
+
+<!--
     <div class="p-4 space-y-3 text-xs">
       <div>
         <label class="font-bold text-slate-700 block mb-1">성명 (이름) *</label>
@@ -613,11 +567,72 @@ body {
         </p>
       </div>
     </div>
+-->
+
+		<div class="p-4 space-y-3 text-xs">
+		  <div>
+		    <label class="font-bold text-slate-700 block mb-1">성명 (회원가입 시 필수)</label>
+		    <input
+		      type="text"
+		      id="auth-user-name"
+		      placeholder="예: 홍길동"
+		      class="w-full border border-slate-300 rounded-lg p-2 outline-none font-bold"
+		    >
+		  </div>
+		
+		  <div>
+		    <label class="font-bold text-slate-700 block mb-1">전화번호 (선택)</label>
+		    <input
+		      type="tel"
+		      id="auth-user-phone"
+		      placeholder="예: 01012345678"
+		      class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono"
+		    >
+		  </div>
+		
+		  <div>
+		    <label class="font-bold text-slate-700 block mb-1">아이디 *</label>
+		    <input
+		      type="text"
+		      id="auth-user-username"
+		      autocomplete="username"
+		      placeholder="영문/숫자 아이디"
+		      class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono"
+		    >
+		  </div>
+		
+		  <div>
+		    <label class="font-bold text-slate-700 block mb-1">비밀번호 *</label>
+		    <input
+		      type="password"
+		      id="auth-user-password"
+		      autocomplete="current-password"
+		      placeholder="비밀번호 입력"
+		      class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono"
+		    >
+		  </div>
+		
+		  <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+		    <p class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+		      <i class="fa-solid fa-shield-halved text-amber-600"></i>
+		      회원가입 승인 안내
+		    </p>
+		    <p class="text-[10px] text-slate-600 leading-relaxed">
+		      회원가입 후에는 <b class="text-red-600">관리자 승인 대기</b> 상태입니다.
+		      승인 후 일정 등록 및 수정이 가능합니다.
+		    </p>
+		  </div>
+		</div>
+
     <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
       <button id="btn-user-logout" onclick="userLogout()" class="px-3 py-1.5 text-xs bg-red-100 text-red-700 font-bold rounded-lg hidden">로그아웃</button>
       <div class="flex gap-1.5 ml-auto">
         <button onclick="closeUserAuthModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
+<!--        
         <button onclick="handleUserAuthSubmit()" class="px-4 py-1.5 text-xs bg-sky-900 text-white font-bold rounded-lg shadow-xs">가입 / 로그인</button>
+-->
+				<button onclick="loginUserFromTable()"  class="px-3 py-1.5 text-xs bg-sky-900 text-white font-bold rounded-lg shadow-xs">로그인</button>
+				<button onclick="registerUserToTable()" class="px-3 py-1.5 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">회원가입</button>
       </div>
     </div>
   </div>
@@ -633,10 +648,36 @@ body {
       <button onclick="closeAdminLoginModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="p-4 space-y-3 text-xs">
+<!--
       <div>
         <label class="font-bold text-slate-700 block mb-1">관리자 비밀번호</label>
         <input type="password" id="input-admin-pw" placeholder="암호 입력 (기본: 1234)" class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono">
       </div>
+-->
+
+			<div>
+			  <label class="font-bold text-slate-700 block mb-1">관리자 아이디</label>
+			  <input
+			    type="text"
+			    id="input-admin-username"
+			    value="admin"
+			    autocomplete="username"
+			    placeholder="관리자 아이디"
+			    class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono"
+			  >
+			</div>
+			
+			<div>
+			  <label class="font-bold text-slate-700 block mb-1">관리자 비밀번호</label>
+			  <input
+			    type="password"
+			    id="input-admin-pw"
+			    autocomplete="current-password"
+			    placeholder="비밀번호 입력"
+			    class="w-full border border-slate-300 rounded-lg p-2 outline-none font-mono"
+			  >
+			</div>
+
     </div>
     <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-1.5">
       <button onclick="closeAdminLoginModal()" class="px-3 py-1.5 text-xs bg-slate-200 text-slate-700 font-semibold rounded-lg">취소</button>
@@ -1604,10 +1645,15 @@ async function loadTasksFromSupabase() {
 }
 
 async function loadUsersFromSupabase() {
+/*
   const { data, error } = await supabaseClient
     .from('users')
     .select('*')
     .order('createdAt', { ascending: false });
+*/
+	const { data, error } = await supabaseClient
+	  .from('users')
+	  .select('user_key, name, phone, username, role, approved');
 
   if (error) {
     console.warn('사용자 목록을 불러오지 못했습니다:', error.message);
@@ -1619,9 +1665,14 @@ async function loadUsersFromSupabase() {
   updatePendingUserBadge();
 
   if (currentUser) {
+/*
     const found = userPermissions.find(
       user => user.name === currentUser.name && user.phone === currentUser.phone
     );
+*/
+		const found = userPermissions.find(
+		  user => user.user_key === currentUser.userKey
+		);
 
     if (found) {
       currentUser.approved = !!found.approved;
@@ -1654,26 +1705,6 @@ function subscribeToRealtimeChanges() {
     )
     .subscribe();
 }
-
-//async function saveCloudTask(taskData) {
-//  if (!supabaseClient || !isCloudConnected) {
-//    return { data: null, error: null };
-//  }
-//
-//  const payload = prepareTaskForSupabase(taskData);
-//  const { data, error } = await supabaseClient
-//    .from('tasks')
-//    .upsert(taskData, { onConflict: 'id' })
-//    .select()
-//    .single();
-//
-//  if (error) {
-//    console.error('Supabase 일정 저장 실패:', error);
-//    throw error;
-//  }
-//
-//  return { data, error: null };
-//}
 
 async function saveCloudTask(taskData) {
   if (!supabaseClient || !isCloudConnected) {
@@ -1726,52 +1757,6 @@ function canEdit() {
   return false;
 }
 
-//function updateAuthUIStatus() {
-//  const adminBadge = document.getElementById('admin-badge');
-//  const userBadge = document.getElementById('user-auth-badge');
-//  const adminTools = document.getElementById('admin-active-tools');
-//  const loginBtnText = document.getElementById('txt-user-login-btn');
-//	const userLoginButton = document.getElementById('btn-user-login');
-//
-//  if (isAdmin) {
-//    adminBadge.classList.remove('hidden');
-//    adminTools.classList.remove('hidden');
-//    document.getElementById('btn-admin-login').classList.add('hidden');
-//    // 관리자 로그인 시 "로그인/가입" 버튼 숨김
-//    if (userLoginButton) {
-//      userLoginButton.classList.add('hidden');
-//    }
-//  } else {
-//    adminBadge.classList.add('hidden');
-//    adminTools.classList.add('hidden');
-//    document.getElementById('btn-admin-login').classList.remove('hidden');
-//    // 관리자 로그아웃 시 "로그인/가입" 버튼 다시 표시
-//    if (userLoginButton) {
-//      userLoginButton.classList.remove('hidden');
-//    }
-//  }
-//
-//	// 관리자일 때만 일정 필터 옆 "로그" 버튼 표시
-//	const adminLogButton = document.getElementById('admin-log-button');
-//	
-//	if (adminLogButton) {
-//	  adminLogButton.classList.toggle('hidden', !isAdmin);
-//	}
-//
-//
-//  if (currentUser) {
-//    userBadge.classList.remove('hidden');
-//    userBadge.innerText = currentUser.approved ? `${currentUser.name} (승인됨)` : `${currentUser.name} (대기중)`;
-//    userBadge.className = currentUser.approved ? 
-//      "px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-800 text-emerald-200" :
-//      "px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-900 text-sky-200";
-//    loginBtnText.innerText = "내정보";
-//  } else {
-//    userBadge.classList.add('hidden');
-//    loginBtnText.innerText = "로그인/가입";
-//  }
-//}
-
 function updateAuthUIStatus() {
   const adminBadge = document.getElementById('admin-badge');
   const userBadge = document.getElementById('user-auth-badge');
@@ -1810,31 +1795,6 @@ function updateAuthUIStatus() {
   if (adminLogButton) adminLogButton.classList.add('hidden');
 
   // 3. 일반 사용자 로그인 상태
-//  if (currentUser) {
-//    const isApproved = !!currentUser.approved;
-//
-//    if (userBadge) {
-//      userBadge.classList.remove('hidden');
-//      userBadge.textContent = isApproved
-//        ? `${currentUser.name} (승인됨)`
-//        : `${currentUser.name} (대기중)`;
-//
-//      userBadge.className = isApproved
-//        ? 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-700 text-emerald-100'
-//        : 'shrink-0 px-1.5 py-0.5 text-[9px] font-black rounded-md bg-sky-700 text-sky-100';
-//    }
-//
-//    if (loginBtnText) {
-//      loginBtnText.textContent = '내정보';
-//    }
-//
-//  } else {
-//    if (userBadge) userBadge.classList.add('hidden');
-//
-//    if (loginBtnText) {
-//      loginBtnText.textContent = '로그인/가입';
-//    }
-//  }
 	if (currentUser) {
 	  const isApproved = !!currentUser.approved;
 	
@@ -1873,7 +1833,7 @@ function updateAuthUIStatus() {
 
 }
 
-
+/*
 function openUserAuthModal() {
   if (currentUser) {
     document.getElementById('auth-user-name').value = currentUser.name || '';
@@ -1886,12 +1846,48 @@ function openUserAuthModal() {
   }
   document.getElementById('user-auth-modal').classList.remove('hidden');
 }
+*/
+
+function openUserAuthModal() {
+  const nameInput = document.getElementById('auth-user-name');
+  const phoneInput = document.getElementById('auth-user-phone');
+  const usernameInput = document.getElementById('auth-user-username');
+  const passwordInput = document.getElementById('auth-user-password');
+  const logoutButton = document.getElementById('btn-user-logout');
+
+  if (currentUser) {
+    nameInput.value = currentUser.name || '';
+    phoneInput.value = currentUser.phone || '';
+    usernameInput.value = currentUser.username || '';
+    passwordInput.value = '';
+
+    nameInput.readOnly = true;
+    phoneInput.readOnly = true;
+    usernameInput.readOnly = true;
+
+    logoutButton.classList.remove('hidden');
+  } else {
+    nameInput.value = '';
+    phoneInput.value = '';
+    usernameInput.value = '';
+    passwordInput.value = '';
+
+    nameInput.readOnly = false;
+    phoneInput.readOnly = false;
+    usernameInput.readOnly = false;
+
+    logoutButton.classList.add('hidden');
+  }
+
+  document.getElementById('user-auth-modal').classList.remove('hidden');
+}
 
 function closeUserAuthModal() {
   document.getElementById('user-auth-modal').classList.add('hidden');
 }
 
 // Supabase ------------------------------------------------
+/*
 async function handleUserAuthSubmit() {
   const name = document.getElementById('auth-user-name').value.trim();
   const phone = document.getElementById('auth-user-phone').value.trim();
@@ -1961,6 +1957,129 @@ async function handleUserAuthSubmit() {
     alert(`회원가입 또는 로그인에 실패했습니다.\n${error.message}`);
   }
 }
+*/
+async function loginUserFromTable() {
+  const username = document.getElementById('auth-user-username').value.trim();
+  const password = document.getElementById('auth-user-password').value;
+
+  if (!username || !password) {
+    alert('아이디와 비밀번호를 입력해주세요.');
+    return;
+  }
+
+  if (!supabaseClient) {
+    alert('Supabase 연결이 준비되지 않았습니다.');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('authenticate_app_user', {
+      p_username: username,
+      p_password: password
+    });
+
+    if (error) throw error;
+
+    const user = Array.isArray(data) ? data[0] : data;
+
+    if (!user) {
+      alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    if (user.role === 'admin') {
+      alert('관리자 계정은 관리자 로그인 메뉴를 이용해주세요.');
+      return;
+    }
+
+    currentUser = {
+      userKey: user.user_key,
+      name: user.name,
+      phone: user.phone || '',
+      username: user.username,
+      role: user.role,
+      approved: !!user.approved
+    };
+
+    localStorage.setItem(
+      'gukje_current_user',
+      JSON.stringify(currentUser)
+    );
+
+    updateAuthUIStatus();
+    closeUserAuthModal();
+
+    alert(
+      currentUser.approved
+        ? `${currentUser.name}님, 로그인되었습니다. 일정 등록 및 수정이 가능합니다.`
+        : `${currentUser.name}님, 로그인되었습니다. 현재 관리자 승인 대기 상태입니다.`
+    );
+  } catch (error) {
+    console.error('사용자 로그인 오류:', error);
+    alert(`로그인에 실패했습니다.\n${error.message || '인증 정보를 확인해주세요.'}`);
+  }
+}
+
+
+async function registerUserToTable() {
+  const name = document.getElementById('auth-user-name').value.trim();
+  const phone = document.getElementById('auth-user-phone').value.trim();
+  const username = document.getElementById('auth-user-username').value.trim();
+  const password = document.getElementById('auth-user-password').value;
+
+  if (!name || !username || !password) {
+    alert('성명, 아이디, 비밀번호는 필수 입력 항목입니다.');
+    return;
+  }
+
+  if (password.length < 4) {
+    alert('비밀번호는 4자 이상 입력해주세요.');
+    return;
+  }
+
+  if (!supabaseClient) {
+    alert('Supabase 연결이 준비되지 않았습니다.');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('register_app_user', {
+      p_name: name,
+      p_phone: phone,
+      p_username: username,
+      p_password: password
+    });
+
+    if (error) throw error;
+
+    const user = Array.isArray(data) ? data[0] : data;
+
+    currentUser = {
+      userKey: user.user_key,
+      name: user.name,
+      phone: user.phone || '',
+      username: user.username,
+      role: user.role,
+      approved: !!user.approved
+    };
+
+    localStorage.setItem(
+      'gukje_current_user',
+      JSON.stringify(currentUser)
+    );
+
+    updateAuthUIStatus();
+    closeUserAuthModal();
+
+    alert(
+      '회원가입이 완료되었습니다.\n관리자 승인 후 일정 등록 및 수정이 가능합니다.'
+    );
+  } catch (error) {
+    console.error('회원가입 오류:', error);
+    alert(`회원가입에 실패했습니다.\n${error.message || '입력 정보를 확인해주세요.'}`);
+  }
+}
+
 // Supabase ------------------------------------------------
 
 function userLogout() {
@@ -1971,15 +2090,25 @@ function userLogout() {
   alert('로그아웃되었습니다.');
 }
 
+/*
 function openAdminLoginModal() {
   document.getElementById('input-admin-pw').value = '';
   document.getElementById('admin-login-modal').classList.remove('hidden');
 }
+*/
+
+function openAdminLoginModal() {
+  document.getElementById('input-admin-username').value = 'admin';
+  document.getElementById('input-admin-pw').value = '';
+  document.getElementById('admin-login-modal').classList.remove('hidden');
+}
+
 
 function closeAdminLoginModal() {
   document.getElementById('admin-login-modal').classList.add('hidden');
 }
 
+/*
 function verifyAdminLogin() {
   const pw = document.getElementById('input-admin-pw').value;
   if (pw === '1234') { // Default admin password
@@ -1992,12 +2121,86 @@ function verifyAdminLogin() {
     alert("비밀번호가 일치하지 않습니다.");
   }
 }
+*/
 
+async function verifyAdminLogin() {
+  const username = document.getElementById('input-admin-username').value.trim();
+  const password = document.getElementById('input-admin-pw').value;
+
+  if (!username || !password) {
+    alert('관리자 아이디와 비밀번호를 입력해주세요.');
+    return;
+  }
+
+  if (!supabaseClient) {
+    alert('Supabase 연결이 준비되지 않았습니다.');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('authenticate_app_user', {
+      p_username: username,
+      p_password: password
+    });
+
+    if (error) throw error;
+
+    const user = Array.isArray(data) ? data[0] : data;
+
+    if (!user) {
+      alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    if (user.role !== 'admin') {
+      alert('관리자 권한이 없는 계정입니다.');
+      return;
+    }
+
+    isAdmin = true;
+
+    currentUser = {
+      userKey: user.user_key,
+      name: user.name,
+      phone: user.phone || '',
+      username: user.username,
+      role: user.role,
+      approved: true
+    };
+
+    localStorage.setItem('gukje_is_admin', 'true');
+    localStorage.setItem(
+      'gukje_current_user',
+      JSON.stringify(currentUser)
+    );
+
+    updateAuthUIStatus();
+    closeAdminLoginModal();
+
+    alert('최고 관리자로 로그인되었습니다.');
+  } catch (error) {
+    console.error('관리자 로그인 오류:', error);
+    alert(`관리자 로그인에 실패했습니다.\n${error.message || '인증 정보를 확인해주세요.'}`);
+  }
+}
+
+/*
 function adminLogout() {
   isAdmin = false;
   localStorage.removeItem('gukje_is_admin');
   updateAuthUIStatus();
   alert("관리자 로그아웃 되었습니다.");
+}
+*/
+function adminLogout() {
+  isAdmin = false;
+  currentUser = null;
+
+  localStorage.removeItem('gukje_is_admin');
+  localStorage.removeItem('gukje_current_user');
+
+  updateAuthUIStatus();
+  alert('관리자 로그아웃 되었습니다.');
 }
 
 // --- DROPDOWNS & FILTERING ---
@@ -2133,12 +2336,6 @@ function renderCalendar() {
       }
       return true;
     });
-
-//    const cell = document.createElement('div');
-//    cell.className = `p-1 border rounded-lg flex flex-col justify-between cursor-pointer transition hover:border-amber-400 ${isHoliday ? 'bg-red-50/30 border-red-100' : 'bg-white border-slate-100'} min-h-[68px] ${isFullscreen ? 'calendar-cell-fs' : ''}`;
-//    cell.onclick = () => openDayDetailSheet(dateStr, dayTasks, holidayName);
-//
-//    const isToday = new Date().toISOString().split('T')[0] === dateStr;
 
 		const isToday = new Date().toISOString().split('T')[0] === dateStr;
 		
@@ -2455,62 +2652,6 @@ function closeDuplicateWarningModal() {
   document.getElementById('duplicate-warning-modal').classList.add('hidden');
 }
 
-// Supabase ---------------------------------------------------
-//async function executeTaskSave(taskData) {
-//  try {
-//    const saveButton = document.querySelector(
-//      '#task-modal button[onclick="saveTaskFromModal()"]'
-//    );
-//
-//    if (saveButton) {
-//      saveButton.disabled = true;
-//      saveButton.innerText = '저장 중...';
-//    }
-//
-//    // Supabase 저장이 먼저 성공해야 화면 상태를 바꿉니다.
-//    if (isCloudConnected) {
-//      const result = await saveCloudTask(taskData);
-//
-//      if (result.data) {
-//        taskData = result.data;
-//      }
-//    }
-//
-//    const existingIndex = tasks.findIndex(task => task.id === taskData.id);
-//
-//    if (existingIndex >= 0) {
-//      tasks[existingIndex] = taskData;
-//    } else {
-//      tasks.push(taskData);
-//    }
-//
-//    saveLocalState();
-//    closeModal();
-//    renderCalendar();
-//    updateQuickStats();
-//    renderUtilizationView();
-//
-//    alert('일정이 저장되었습니다.');
-//  } catch (error) {
-//    console.error('일정 저장 오류:', error);
-//
-//    alert(
-//      `일정 저장에 실패했습니다.\n\n` +
-//      `${error.message || 'Supabase 테이블 및 RLS 정책을 확인하세요.'}`
-//    );
-//  } finally {
-//    const saveButton = document.querySelector(
-//      '#task-modal button[onclick="saveTaskFromModal()"]'
-//    );
-//
-//    if (saveButton) {
-//      saveButton.disabled = false;
-//      saveButton.innerText = '저장하기';
-//    }
-//  }
-//}
-// Supabase ---------------------------------------------------
-
 // 데이터 저장+로그 기록
 async function executeTaskSave(taskData) {
   try {
@@ -2594,37 +2735,6 @@ async function executeTaskSave(taskData) {
   }
 }
 // 데이터 저장+로그 기록
-
-// Supabase ---------------------------------------------------
-//async function deleteCurrentTask() {
-//  const id = document.getElementById('task-id').value;
-//
-//  if (!id) return;
-//
-//  if (!confirm('정말 이 일정을 삭제하시겠습니까?')) {
-//    return;
-//  }
-//
-//  try {
-//    if (isCloudConnected) {
-//      await deleteCloudTask(id);
-//    }
-//
-//    tasks = tasks.filter(task => task.id !== id);
-//
-//    saveLocalState();
-//    closeModal();
-//    renderCalendar();
-//    updateQuickStats();
-//    renderUtilizationView();
-//
-//    alert('일정이 삭제되었습니다.');
-//  } catch (error) {
-//    console.error('일정 삭제 오류:', error);
-//    alert(`일정 삭제에 실패했습니다.\n${error.message}`);
-//  }
-//}
-// Supabase ---------------------------------------------------
 
 // 삭제 + 로그 기록
 async function deleteCurrentTask() {
@@ -2771,66 +2881,6 @@ function renderParsedResults(parsedTasks) {
 }
 
 // 카톡 일괄 저장 + 로그 기록
-//async function saveAllParsedTasks() {
-//  if (!canEdit()) {
-//    alert('권한이 없습니다.');
-//    return;
-//  }
-//
-//  if (!window.lastParsedTasks || window.lastParsedTasks.length === 0) {
-//    alert('저장할 일정이 없습니다.');
-//    return;
-//  }
-//
-//  try {
-//    if (isCloudConnected) {
-//
-////      const { error } = await supabaseClient
-////        .from('tasks')
-////        .upsert(window.lastParsedTasks, { onConflict: 'id' });
-//			const payload = window.lastParsedTasks.map(prepareTaskForSupabase);
-//			
-//			const { error } = await supabaseClient
-//			  .from('tasks')
-//			  .upsert(payload, { onConflict: 'id' });
-//
-//
-//      if (error) throw error;
-//    }
-//
-//// 카톡 추출 일괄 저장도 로그 남기기
-//		for (const task of payload) {
-//		  await writeTaskLog({
-//		    action: 'CREATE',
-//		    taskId: task.id,
-//		    beforeData: null,
-//		    afterData: task,
-//		    message: `카톡 추출 일정 등록: ${task.siteName || '현장명 없음'}`
-//		  });
-//		}
-//// 카톡 추출 일괄 저장도 로그 남기기
-//
-////    tasks.push(...window.lastParsedTasks);
-//		tasks.push(...payload);
-//    saveLocalState();
-//
-//    alert(`${window.lastParsedTasks.length}건의 일정이 저장되었습니다.`);
-//
-//    document
-//      .getElementById('parsed-results-container')
-//      .classList.add('hidden');
-//
-//    document.getElementById('chat-input').value = '';
-//
-//    renderCalendar();
-//    updateQuickStats();
-//    renderUtilizationView();
-//    switchTab('calendar');
-//  } catch (error) {
-//    console.error('카톡 추출 일정 저장 오류:', error);
-//    alert(`일괄 저장에 실패했습니다.\n${error.message}`);
-//  }
-//}
 async function saveAllParsedTasks() {
   if (!canEdit()) {
     alert('권한이 없습니다.');
@@ -3463,17 +3513,42 @@ function renderUserPermissionList() {
   if (userPermissions.length === 0) {
     list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">등록된 회원이 없습니다 (클라우드 연동 필요).</div>`;
   } else {
+/*  	
     list.innerHTML = userPermissions.map(u => `
       <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
         <div>
           <span class="font-extrabold text-slate-800 block">${u.name}</span>
           <span class="text-[10px] text-slate-500 font-mono">${u.phone || '전화번호 미입력'}</span>
         </div>
-        <button onclick="toggleUserApproval('${u.id}', ${!u.approved})" class="px-3 py-1.5 rounded-lg text-xs font-bold ${u.approved ? 'bg-emerald-600 text-white' : 'bg-slate-300 text-slate-700'}">
+        <button onclick="toggleUserApproval('${u.user_key}', ${!u.approved})" class="px-3 py-1.5 rounded-lg text-xs font-bold ${u.approved ? 'bg-emerald-600 text-white' : 'bg-slate-300 text-slate-700'}">
           ${u.approved ? '승인됨 (수정 가능)' : '승인 대기'}
         </button>
       </div>
     `).join('');
+*/
+
+	  list.innerHTML = userPermissions.filter(u => u.role !== 'admin').map(u => `
+	    <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
+	      <div>
+	        <span class="font-extrabold text-slate-800 block">${u.name}</span>
+	        <span class="text-[10px] text-slate-500 font-mono">
+	          ${u.username || '-'} / ${u.phone || '전화번호 미입력'}
+	        </span>
+	      </div>
+	
+	      <button
+	        onclick="toggleUserApproval('${u.user_key}', ${!u.approved})"
+	        class="px-3 py-1.5 rounded-lg text-xs font-bold ${
+	          u.approved
+	            ? 'bg-emerald-600 text-white'
+	            : 'bg-slate-300 text-slate-700'
+	        }"
+	      >
+	        ${u.approved ? '승인됨 (수정 가능)' : '승인 대기'}
+	      </button>
+	    </div>
+	  `)
+	  .join('');
   }
 }
 
@@ -3488,7 +3563,10 @@ async function toggleUserApproval(userId, newApproved) {
     const { error } = await supabaseClient
       .from('users')
       .update({ approved: newApproved })
+/*
       .eq('id', userId);
+*/
+			.eq('user_key', userId);
 
     if (error) throw error;
 
