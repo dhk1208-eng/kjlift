@@ -2189,6 +2189,7 @@ async function verifyAdminLogin() {
     );
 
     updateAuthUIStatus();
+		await loadUsersForPermissionManagement();    
     closeAdminLoginModal();
 
     alert('최고 관리자로 로그인되었습니다.');
@@ -3501,19 +3502,293 @@ function resetTeamsToDefault() {
   }
 }
 
+
+
+
+
+
+
+
+
+let userPermissions = [];
+
+
+/* 회원 관리 모달 열기 */
+async function openUserPermissionManageModal() {
+  if (!isAdmin) {
+    alert('회원 관리는 관리자만 사용할 수 있습니다.');
+    return;
+  }
+
+  const modal = document.getElementById('user-permission-manage-modal');
+
+  if (!modal) {
+    alert('회원 관리 모달을 찾을 수 없습니다.');
+    console.error('user-permission-manage-modal 요소가 없습니다.');
+    return;
+  }
+
+  modal.classList.remove('hidden');
+
+  await loadUsersForPermissionManagement();
+}
+
+
+/* 회원 관리 모달 닫기 */
+function closeUserPermissionManageModal() {
+  const modal = document.getElementById('user-permission-manage-modal');
+
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+
+/* Supabase에서 일반 회원 목록 불러오기 */
+async function loadUsersForPermissionManagement() {
+  if (!isAdmin) {
+    return;
+  }
+
+  const listElement = document.getElementById(
+    'user-permission-manage-list'
+  );
+
+  if (!listElement) {
+    console.error('user-permission-manage-list 요소가 없습니다.');
+    return;
+  }
+
+  if (!supabaseClient) {
+    listElement.innerHTML = `
+      <p class="text-xs text-red-500 text-center py-6">
+        Supabase 연결이 준비되지 않았습니다.
+      </p>
+    `;
+    return;
+  }
+
+  listElement.innerHTML = `
+    <p class="text-xs text-slate-400 text-center py-6">
+      회원 목록을 불러오는 중입니다.
+    </p>
+  `;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('users')
+      .select('user_key, name, phone, username, role, approved')
+      .neq('role', 'admin')
+      .order('approved', { ascending: true })
+      .order('name', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    userPermissions = data || [];
+
+    renderUserPermissionManageList();
+    updatePendingUsersBadge();
+  } catch (error) {
+    console.error('회원 목록 조회 오류:', error);
+
+    listElement.innerHTML = `
+      <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-center">
+        <p class="text-xs font-bold text-red-600">
+          회원 목록을 불러오지 못했습니다.
+        </p>
+        <p class="text-[10px] text-red-500 mt-1 break-all">
+          ${escapeHtml(error.message || 'Supabase 권한 설정을 확인해주세요.')}
+        </p>
+      </div>
+    `;
+
+    alert(
+      '회원 목록 조회에 실패했습니다.\n' +
+      (error.message || 'Supabase RLS 정책을 확인해주세요.')
+    );
+  }
+}
+
+/* 회원 목록 화면 출력 */
+function renderUserPermissionManageList() {
+  const listElement = document.getElementById(
+    'user-permission-manage-list'
+  );
+
+  if (!listElement) {
+    return;
+  }
+
+  if (!userPermissions || userPermissions.length === 0) {
+    listElement.innerHTML = `
+      <p class="text-xs text-slate-400 text-center py-6">
+        가입한 일반 회원이 없습니다.
+      </p>
+    `;
+    return;
+  }
+
+  listElement.innerHTML = userPermissions.map(user => {
+    const approved = Boolean(user.approved);
+
+    return `
+      <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-sm text-slate-800">
+              ${escapeHtml(user.name || '이름 없음')}
+            </span>
+
+            ${
+              approved
+                ? `
+                  <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                    승인됨
+                  </span>
+                `
+                : `
+                  <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-bold">
+                    승인 대기
+                  </span>
+                `
+            }
+          </div>
+
+          <p class="mt-1 text-[10px] text-slate-500 font-mono truncate">
+            ${escapeHtml(user.username || '-')}
+          </p>
+
+          ${
+            user.phone
+              ? `
+                <p class="text-[10px] text-slate-400 mt-0.5">
+                  ${escapeHtml(user.phone)}
+                </p>
+              `
+              : ''
+          }
+        </div>
+
+        <button
+          type="button"
+          onclick="changeUserApproval('${user.user_key}', ${!approved})"
+          class="shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition ${
+            approved
+              ? 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+          }"
+        >
+          ${
+            approved
+              ? '<i class="fa-solid fa-user-xmark mr-1"></i>승인 취소'
+              : '<i class="fa-solid fa-user-check mr-1"></i>승인'
+          }
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+/* 회원 승인 또는 승인 취소 */
+async function changeUserApproval(userKey, nextApproved) {
+  if (!isAdmin) {
+    alert('관리자만 회원 승인 상태를 변경할 수 있습니다.');
+    return;
+  }
+
+  if (!supabaseClient) {
+    alert('Supabase 연결이 준비되지 않았습니다.');
+    return;
+  }
+
+  const targetUser = userPermissions.find(
+    user => user.user_key === userKey
+  );
+
+  if (!targetUser) {
+    alert('변경할 회원 정보를 찾을 수 없습니다.');
+    return;
+  }
+
+  const actionText = nextApproved ? '승인' : '승인 취소';
+
+  const confirmed = confirm(
+    `'${targetUser.name}' 회원을 ${actionText}하시겠습니까?`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('users')
+      .update({
+        approved: nextApproved
+      })
+      .eq('user_key', userKey)
+      .neq('role', 'admin');
+
+    if (error) {
+      throw error;
+    }
+
+    alert(
+      nextApproved
+        ? `${targetUser.name} 회원을 승인했습니다.`
+        : `${targetUser.name} 회원의 승인을 취소했습니다.`
+    );
+
+    await loadUsersForPermissionManagement();
+  } catch (error) {
+    console.error('회원 승인 변경 오류:', error);
+
+    alert(
+      `회원 ${actionText} 처리에 실패했습니다.\n` +
+      (error.message || '권한 설정을 확인해주세요.')
+    );
+  }
+}
+
+
+/* 승인 대기 인원 배지 갱신 */
+function updatePendingUsersBadge() {
+  const badge = document.getElementById('pending-users-count-badge');
+
+  if (!badge) {
+    return;
+  }
+
+  const pendingCount = userPermissions.filter(
+    user => !Boolean(user.approved)
+  ).length;
+
+  badge.textContent = pendingCount;
+
+  if (pendingCount > 0) {
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function closeCloudConfigModal() {
   document.getElementById('cloud-config-modal').classList.add('hidden');
-}
-
-/*
-function openUserPermissionManageModal() {
-  renderUserPermissionList();
-  document.getElementById('user-perm-modal').classList.remove('hidden');
-}
-*/
-
-function closeUserPermissionManageModal() {
-  document.getElementById('user-perm-modal').classList.add('hidden');
 }
 
 function renderUserPermissionList() {
@@ -3620,20 +3895,19 @@ function switchTab(tabName) {
   }
 }
 
-async function openMemberManagementModal() {
-  // 관리자만 회원 관리 접근 가능
-  if (!isAdmin) {
-    alert('회원 관리는 관리자만 사용할 수 있습니다.');
-    return;
-  }
-
-  document
-    .getElementById('member-management-modal')
-    .classList.remove('hidden');
-
-  await loadUsersForMemberManagement();
-}
-
+//async function openMemberManagementModal() {
+//  // 관리자만 회원 관리 접근 가능
+//  if (!isAdmin) {
+//    alert('회원 관리는 관리자만 사용할 수 있습니다.');
+//    return;
+//  }
+//
+//  document
+//    .getElementById('member-management-modal')
+//    .classList.remove('hidden');
+//
+//  await loadUsersForMemberManagement();
+//}
 
 function closeMemberManagementModal() {
   document
