@@ -2276,7 +2276,7 @@ function openDayDetailSheet(dateStr, dayTasks, holidayName) {
     `;
   } else {
     container.innerHTML = customHolidayBtnHtml + dayTasks.map(t => `
-      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 hover:border-amber-400 transition cursor-pointer" onclick="openEditTaskModal('${t.id}')">
+      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 hover:border-amber-400 transition cursor-pointer" onclick="openEditTaskModal(this.dataset.taskId)" data-task-id="${escapeHtml(String(t.id))}">
         <div class="flex justify-between items-center">
           <span class="badge-${t.workType} px-2 py-0.5 rounded-md text-[10px] font-extrabold">${t.workType}</span>
           <span class="font-bold text-slate-800 text-xs">${t.siteName} ${t.workContent ? `(${t.workContent})` : ''}</span>
@@ -2356,6 +2356,29 @@ function handleAddTaskClick() {
   openAddTaskModal();
 }
 
+// 작업 등록/수정 창의 권역별 팀 목록을 채웁니다.
+// 기존 파일에는 이 함수 호출만 있고 정의가 빠져 있어, 일정 클릭 시
+// ReferenceError가 발생하며 수정 창이 열리지 않았습니다.
+function updateFormTeamDropdowns(region) {
+  const teamData = regionTeamData[region] || { install: [], safety: [], auto: [], shelf: [] };
+  const setOptions = (elementId, values) => {
+    const select = document.getElementById(elementId);
+    if (!select) return;
+    const previousValue = select.value;
+    select.innerHTML = '<option value="">(선택 안함)</option>' + (values || [])
+      .map(team => `<option value="${escapeHtml(String(team))}">${escapeHtml(String(team))}</option>`)
+      .join('');
+    if (previousValue && [...select.options].some(option => option.value === previousValue)) {
+      select.value = previousValue;
+    }
+  };
+
+  setOptions('form-installTeam', teamData.install);
+  setOptions('form-safetyTeam', teamData.safety);
+  setOptions('form-autoTeam', teamData.auto);
+  setOptions('form-shelfTeam', teamData.shelf);
+}
+
 function openAddTaskModal(defaultDate = '') {
   document.getElementById('modal-title').innerText = "작업 일정 등록";
   document.getElementById('task-id').value = '';
@@ -2380,9 +2403,6 @@ function openAddTaskModal(defaultDate = '') {
 }
 
 function openEditTaskModal(id) {
-  // 일정 ID가 DB에서는 숫자, HTML onclick에서는 문자열로 전달될 수 있어
-  // 문자열 기준으로 비교합니다. 기존의 === 비교 때문에 일정을 찾지 못해
-  // 클릭해도 아무 반응이 없는 문제가 발생했습니다.
   const task = tasks.find(t => String(t.id) === String(id));
   if (!task) {
     console.warn('선택한 일정 정보를 찾을 수 없습니다.', id);
@@ -2516,7 +2536,7 @@ async function executeTaskSave(taskData) {
     }
 
     // 저장 전에 기존 데이터가 있는지 확인
-    const existingTask = tasks.find(task => String(task.id) === String(taskData.id));
+    const existingTask = tasks.find(task => task.id === taskData.id);
     const action = existingTask ? 'UPDATE' : 'CREATE';
 
     // Supabase에 저장하기 전에는 빈 마스트값 등을 null로 정리
@@ -2534,7 +2554,7 @@ async function executeTaskSave(taskData) {
     }
 
     // 2) 화면/LocalStorage 데이터 반영
-    const existingIndex = tasks.findIndex(task => String(task.id) === String(savedTask.id));
+    const existingIndex = tasks.findIndex(task => task.id === savedTask.id);
 
     if (existingIndex >= 0) {
       tasks[existingIndex] = savedTask;
@@ -2596,7 +2616,7 @@ async function deleteCurrentTask() {
     return;
   }
 
-  const taskToDelete = tasks.find(task => String(task.id) === String(id));
+  const taskToDelete = tasks.find(task => task.id === id);
 
   if (!taskToDelete) {
     alert('삭제할 일정을 찾을 수 없습니다.');
@@ -2625,7 +2645,7 @@ async function deleteCurrentTask() {
     });
 
     // 3) 화면/LocalStorage 데이터 제거
-    tasks = tasks.filter(task => String(task.id) !== String(id));
+    tasks = tasks.filter(task => task.id !== id);
 
     saveLocalState();
     closeModal();
