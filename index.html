@@ -2380,8 +2380,15 @@ function openAddTaskModal(defaultDate = '') {
 }
 
 function openEditTaskModal(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
+  // 일정 ID가 DB에서는 숫자, HTML onclick에서는 문자열로 전달될 수 있어
+  // 문자열 기준으로 비교합니다. 기존의 === 비교 때문에 일정을 찾지 못해
+  // 클릭해도 아무 반응이 없는 문제가 발생했습니다.
+  const task = tasks.find(t => String(t.id) === String(id));
+  if (!task) {
+    console.warn('선택한 일정 정보를 찾을 수 없습니다.', id);
+    alert('일정 정보를 찾을 수 없습니다. 새로고침 후 다시 시도해주세요.');
+    return;
+  }
 
   closeDayDetailModal();
 
@@ -2509,7 +2516,7 @@ async function executeTaskSave(taskData) {
     }
 
     // 저장 전에 기존 데이터가 있는지 확인
-    const existingTask = tasks.find(task => task.id === taskData.id);
+    const existingTask = tasks.find(task => String(task.id) === String(taskData.id));
     const action = existingTask ? 'UPDATE' : 'CREATE';
 
     // Supabase에 저장하기 전에는 빈 마스트값 등을 null로 정리
@@ -2527,7 +2534,7 @@ async function executeTaskSave(taskData) {
     }
 
     // 2) 화면/LocalStorage 데이터 반영
-    const existingIndex = tasks.findIndex(task => task.id === savedTask.id);
+    const existingIndex = tasks.findIndex(task => String(task.id) === String(savedTask.id));
 
     if (existingIndex >= 0) {
       tasks[existingIndex] = savedTask;
@@ -2589,7 +2596,7 @@ async function deleteCurrentTask() {
     return;
   }
 
-  const taskToDelete = tasks.find(task => task.id === id);
+  const taskToDelete = tasks.find(task => String(task.id) === String(id));
 
   if (!taskToDelete) {
     alert('삭제할 일정을 찾을 수 없습니다.');
@@ -2618,7 +2625,7 @@ async function deleteCurrentTask() {
     });
 
     // 3) 화면/LocalStorage 데이터 제거
-    tasks = tasks.filter(task => task.id !== id);
+    tasks = tasks.filter(task => String(task.id) !== String(id));
 
     saveLocalState();
     closeModal();
