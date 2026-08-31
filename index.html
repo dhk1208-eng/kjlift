@@ -176,10 +176,10 @@ body {
   <!-- TAB 1: CALENDAR & LIST VIEW -->
   <section id="view-calendar" class="space-y-3">
     <!-- Cloud Status Bar -->
-		<div
-		  id="cloud-status-banner"
-		  class="bg-slate-900 text-amber-300 px-3 py-1.5 rounded-xl text-[11px] font-bold flex justify-between items-center shadow-xs"
-		>
+<!--
+		<div id="cloud-status-banner" class="bg-slate-900 text-amber-300 px-3 py-1.5 rounded-xl text-[11px] font-bold flex justify-between items-center shadow-xs">
+-->		
+		<div id="cloud-status-banner" class="bg-slate-900 text-amber-300 px-3 py-1.5 rounded-xl text-[11px] font-bold flex justify-between items-center shadow-xs">
 		  <span class="flex min-w-0 items-center gap-1.5">
 		    <i class="fa-solid fa-cloud text-sky-400"></i>
 		
@@ -240,6 +240,12 @@ body {
     <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs space-y-2">
       <div class="flex justify-between items-center flex-wrap gap-1">
         <div class="flex gap-1 text-xs">
+<!--
+          <button onclick="setFilter('전체')" id="filter-all"  class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-900 text-white text-[11px]">전체</button>
+          <button onclick="setFilter('설치')" id="filter-설치" class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">설치</button>
+          <button onclick="setFilter('해체')" id="filter-해체" class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">해체</button>
+          <button onclick="setFilter('인상')" id="filter-인상" class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">인상</button>
+-->
           <button onclick="setFilter('전체')" id="filter-all"  class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-900 text-white text-[11px]">전체</button>
           <button onclick="setFilter('설치')" id="filter-설치" class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">설치</button>
           <button onclick="setFilter('해체')" id="filter-해체" class="filter-btn px-2 py-0.5 rounded-lg font-semibold bg-slate-100 text-slate-600 text-[11px]">해체</button>
@@ -247,16 +253,13 @@ body {
 
 <!-- 관리자 로그인 시에만 표시되는 로그 버튼 -->
 					<button id="admin-log-button" onclick="openTaskLogsModal()" class="hidden px-2 py-1 rounded-lg font-semibold bg-violet-100 text-violet-700 text-[11px]">  <i class="fa-solid fa-clock-rotate-left mr-0.5"></i>로그</button>
-<!-- 관리자 로그인 시에만 표시되는 로그 버튼 -->
-
         </div>
 
 				<div class="flex items-center gap-1">
-				  <button
-				    onclick="toggleExpandCalendar()"
-				    id="btn-expand-calendar"
-				    class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-[11px] px-0.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
-				  >
+<!--
+				  <button onclick="toggleExpandCalendar()" id="btn-expand-calendar" class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-[11px] px-0.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition">
+-->				  
+				  <button onclick="toggleExpandCalendar()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 text-[11px] px-0.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition">
 				    <i class="fa-solid fa-expand text-[9px]" id="expand-icon"></i>
 				    <span id="expand-btn-text">전체</span>
 				  </button>
@@ -386,7 +389,10 @@ body {
         <button onclick="insertSampleChat()" class="px-2.5 py-1.5 text-[11px] bg-slate-100 active:bg-slate-200 rounded-lg font-semibold text-slate-700">
           샘플 입력
         </button>
+<!--
         <button id="btn-extract" onclick="extractTasksFromChat()" class="px-4 py-2 text-xs bg-amber-400 active:bg-amber-500 font-extrabold rounded-lg text-slate-900 flex items-center gap-1 shadow-xs">
+-->        
+        <button onclick="extractTasksFromChat()" class="px-4 py-2 text-xs bg-amber-400 active:bg-amber-500 font-extrabold rounded-lg text-slate-900 flex items-center gap-1 shadow-xs">
           <i class="fa-solid fa-robot"></i> 일정 자동 추출
         </button>
       </div>
@@ -511,7 +517,10 @@ body {
 </main>
 
 <!-- Mobile Bottom Navigation Bar -->
+<!--
 <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 shadow-lg z-30 pb-safe" id="bottom-nav">
+-->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 shadow-lg z-30 pb-safe">
 
 <div
   class="max-w-md mx-auto grid grid-cols-4 text-center py-1"
@@ -566,8 +575,6 @@ body {
     Copyright: Kukje Industrial Rental / Ver:로딩 중
   </span>
 </div>
-
-
     
 </nav>
 
@@ -727,7 +734,6 @@ body {
   </div>
 </div>
 
-
 <!-- Admin Login Modal -->
 <div id="admin-login-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs overflow-hidden flex flex-col">
@@ -882,14 +888,23 @@ body {
       <p class="text-[11px] text-slate-600">Firebase Firestore 설정을 입력하면 모든 사용자가 실시간으로 일정을 공유할 수 있습니다.</p>
       <div>
         <label class="font-bold text-slate-700 block mb-0.5">API Key</label>
+<!--
         <input type="text" id="cfg-apiKey" placeholder="Firebase API Key" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
+-->        
+        <input type="text" placeholder="Firebase API Key" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
       </div>
       <div>
         <label class="font-bold text-slate-700 block mb-0.5">Project ID</label>
+<!--
+        <input type="text" id="cfg-projectId" placeholder="Project ID" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
+-->        
         <input type="text" id="cfg-projectId" placeholder="Project ID" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
       </div>
       <div>
         <label class="font-bold text-slate-700 block mb-0.5">App ID</label>
+<!--
+        <input type="text" id="cfg-appId" placeholder="App ID" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
+-->        
         <input type="text" id="cfg-appId" placeholder="App ID" class="w-full border border-slate-300 rounded-lg p-1.5 font-mono text-[11px]">
       </div>
     </div>
@@ -1086,6 +1101,9 @@ body {
     <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center pb-safe">
       <span id="day-detail-count" class="text-[11px] font-bold text-slate-500">총 0개</span>
       <div class="flex gap-1.5">
+<!--
+        <button id="day-detail-add-btn" onclick="addNewTaskForCurrentDay()" class="px-3 py-1.5 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">
+-->
         <button id="day-detail-add-btn" onclick="addNewTaskForCurrentDay()" class="px-3 py-1.5 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">
           <i class="fa-solid fa-plus text-[10px] mr-1"></i> 일정 추가
         </button>
@@ -1498,22 +1516,6 @@ const HOLIDAYS = {
   "2040-10-09": "한글날",
   "2040-12-25": "성탄절"
 };
-
-// Default Initial Team Setup (25 Teams per category across default regions)
-//const DEFAULT_REGIONS = ["수도권", "영남권", "호남권", "충청/강원"];
-//
-//function generateDefaultTeams() {
-//  const teams = {};
-//  DEFAULT_REGIONS.forEach(reg => {
-//    teams[reg] = {
-//      install: Array.from({ length: 25 }, (_, i) => `${reg} 설치${i + 1}팀`),
-//      safety: Array.from({ length: 25 }, (_, i) => `${reg} 안전문${i + 1}팀`),
-//      auto: Array.from({ length: 25 }, (_, i) => `${reg} 자동${i + 1}팀`),
-//      shelf: Array.from({ length: 25 }, (_, i) => `${reg} 방호선반${i + 1}팀`)
-//    };
-//  });
-//  return teams;
-//}
 
 const DEFAULT_REGIONS = ['수도권', '영남권', '호남권', '충청/강원'];
 
@@ -3542,16 +3544,7 @@ function resetTeamsToDefault() {
   }
 }
 
-
-
-
-
-
-
-
-
 //let userPermissions = [];
-
 
 /* 회원 관리 모달 닫기 */
 function closeUserPermissionManageModal() {
@@ -3793,19 +3786,6 @@ function updatePendingUsersBadge() {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 function closeCloudConfigModal() {
   document.getElementById('cloud-config-modal').classList.add('hidden');
 }
@@ -3815,20 +3795,6 @@ function renderUserPermissionList() {
   if (userPermissions.length === 0) {
     list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">등록된 회원이 없습니다 (클라우드 연동 필요).</div>`;
   } else {
-/*  	
-    list.innerHTML = userPermissions.map(u => `
-      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
-        <div>
-          <span class="font-extrabold text-slate-800 block">${u.name}</span>
-          <span class="text-[10px] text-slate-500 font-mono">${u.phone || '전화번호 미입력'}</span>
-        </div>
-        <button onclick="toggleUserApproval('${u.user_key}', ${!u.approved})" class="px-3 py-1.5 rounded-lg text-xs font-bold ${u.approved ? 'bg-emerald-600 text-white' : 'bg-slate-300 text-slate-700'}">
-          ${u.approved ? '승인됨 (수정 가능)' : '승인 대기'}
-        </button>
-      </div>
-    `).join('');
-*/
-
 	  list.innerHTML = userPermissions.filter(u => u.role !== 'admin').map(u => `
 	    <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
 	      <div>
@@ -3882,17 +3848,6 @@ async function toggleUserApproval(userId, newApproved) {
   }
 }
 // Supabase ----------------------------------
-
-//function updatePendingUserBadge() {
-//  const pending = userPermissions.filter(u => !u.approved).length;
-//  const badge = document.getElementById('pending-users-count-badge');
-//  if (pending > 0) {
-//    badge.innerText = pending;
-//    badge.classList.remove('hidden');
-//  } else {
-//    badge.classList.add('hidden');
-//  }
-//}
 
 function updatePendingUserBadge() {
   const badge = document.getElementById('pending-users-count-badge');
@@ -4000,11 +3955,6 @@ async function loadUsersForMemberManagement() {
       throw error;
     }
 
-//    // 관리자 계정만 제외합니다.
-//    // role이 비어 있는 기존 회원도 목록에 표시합니다.
-//    userPermissions = (data || []).filter((user) => {
-//      return String(user.role || '').toLowerCase() !== 'admin';
-//    });
 		// 현재 로그인한 관리자 본인만 목록에서 제외합니다.
 		// DB에 role 값이 잘못 저장된 기존 회원도 모두 표시되도록
 		// role 값으로 회원을 일괄 제외하지 않습니다.
@@ -4030,7 +3980,6 @@ async function loadUsersForMemberManagement() {
     `;
   }
 }
-
 
 function renderMemberManagementList(users) {
   const listElement = document.getElementById('member-management-list');
@@ -4114,11 +4063,6 @@ async function changeMemberApproval(userKey, nextApproved) {
     alert('대상 회원 정보를 찾을 수 없습니다.');
     return;
   }
-
-//  if (String(targetUser.role || '').toLowerCase() === 'admin') {
-//    alert('관리자 계정은 승인 상태를 변경할 수 없습니다.');
-//    return;
-//  }
 
 	// 현재 로그인한 관리자 본인의 승인 상태만 변경하지 못하게 합니다.
 	if (String(targetUser.user_key) === String(currentUser?.userKey || '')) {
