@@ -1517,6 +1517,11 @@ const HOLIDAYS = {
   "2040-12-25": "성탄절"
 };
 
+// --- 자동 로그아웃 관련 변수 ---
+const INACTIVITY_TIMEOUT_MS = 60 * 60 * 1000; // 60분 (밀리초)
+let inactivityTimer = null;
+let lastActivityTime = null;
+
 const DEFAULT_REGIONS = ['수도권', '영남권', '호남권', '충청/강원'];
 
 function generateDefaultTeams() {
@@ -1645,6 +1650,11 @@ function loadLocalState() {
   }
 
   updateAuthUIStatus();
+
+	// 페이지 로드 시 이미 로그인된 상태면 자동 로그아웃 타이머 시작
+	if (isAdmin || currentUser) {
+	  startInactivityTimer();
+	}  
 }
 
 function saveLocalState() {
@@ -2074,8 +2084,12 @@ async function loginUserFromTable() {
       JSON.stringify(currentUser)
     );
 
-    updateAuthUIStatus();
-    closeUserAuthModal();
+//    updateAuthUIStatus();
+//    closeUserAuthModal();
+
+		updateAuthUIStatus();
+		closeUserAuthModal();
+		startInactivityTimer(); //로그인 시 타이머 시작
 
     if (currentUser.approved) {
       alert(`${currentUser.name}님, 로그인되었습니다.\n일정 등록 및 수정이 가능합니다.`);
@@ -2144,8 +2158,12 @@ async function registerUserToTable() {
       JSON.stringify(currentUser)
     );
 
-    updateAuthUIStatus();
-    closeUserAuthModal();
+//    updateAuthUIStatus();
+//    closeUserAuthModal();
+
+		updateAuthUIStatus();
+		closeUserAuthModal();
+		startInactivityTimer(); //회원가입 후 타이머 시작
 
     alert(
       `${currentUser.name}님, 회원가입이 완료되었습니다.\n` +
@@ -2157,10 +2175,53 @@ async function registerUserToTable() {
   }
 }
 
-// Supabase ------------------------------------------------
+//타이머 관리 함수
+function startInactivityTimer() {
+  if (inactivityTimer) clearTimeout(inactivityTimer);
+  lastActivityTime = Date.now();
+  
+  inactivityTimer = setTimeout(() => {
+    console.log('60분 동안 사용하지 않아 자동 로그아웃됩니다.');
+    stopInactivityTimer();
+    
+    if (isAdmin) {
+      adminLogout();
+      alert('60분 동안 사용하지 않아 관리자 로그아웃되었습니다.');
+    } else if (currentUser) {
+      userLogout();
+      alert('60분 동안 사용하지 않아 로그아웃되었습니다.');
+    }
+  }, INACTIVITY_TIMEOUT_MS);
+}
 
+//사용자 활동 감지 시 타이머 리셋
+function resetInactivityTimer() {
+  if (isAdmin || currentUser) {
+    startInactivityTimer();
+  }
+}
+
+//로그아웃 시 타이머 중지
+function stopInactivityTimer() {
+  if (inactivityTimer) {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = null;
+  }
+  lastActivityTime = null;
+}
+
+//사용자 활동(클릭, 키보드 입력 등) 감지
+function handleUserActivity() {
+  const now = Date.now();
+  if (lastActivityTime === null || (now - lastActivityTime) > 1000) {
+    resetInactivityTimer();
+  }
+}
+
+// Supabase ------------------------------------------------
 function userLogout() {
   currentUser = null;
+  stopInactivityTimer(); //타이머 중지
   localStorage.removeItem('gukje_current_user');
   updateAuthUIStatus();
   closeUserAuthModal();
@@ -2231,9 +2292,9 @@ async function verifyAdminLogin() {
 
     updateAuthUIStatus();
 		await loadUsersForMemberManagement();
-//		await loadUsersForPermissionManagement();    
     closeAdminLoginModal();
-
+		startInactivityTimer(); //관리자 로그인 시 타이머 시작
+		
     alert('최고 관리자로 로그인되었습니다.');
   } catch (error) {
     console.error('관리자 로그인 오류:', error);
@@ -2244,6 +2305,7 @@ async function verifyAdminLogin() {
 function adminLogout() {
   isAdmin = false;
   currentUser = null;
+  stopInactivityTimer(); //타이머 중지
 
   localStorage.removeItem('gukje_is_admin');
   localStorage.removeItem('gukje_current_user');
@@ -4105,6 +4167,14 @@ async function changeMemberApproval(userKey, nextApproved) {
     );
   }
 }
+
+// 자동 로그아웃을 위한 사용자 활동 감지
+document.addEventListener('click', handleUserActivity);
+document.addEventListener('keydown', handleUserActivity);
+document.addEventListener('scroll', handleUserActivity);
+document.addEventListener('mousemove', handleUserActivity);
+document.addEventListener('touchstart', handleUserActivity);
+
 </script>
 </body>
 </html>
