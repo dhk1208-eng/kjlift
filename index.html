@@ -3942,6 +3942,18 @@ function renderMemberManagementList(users) {
   }).join('');
 }
 
+function populateFormRegionOptions() {
+  const select = document.getElementById('form-region');
+  if (!select) return;
+  const previousValue = select.value;
+  const regions = Object.keys(regionTeamData);
+  select.innerHTML = regions
+    .map(region => `<option value="${escapeHtml(String(region))}">${escapeHtml(String(region))}</option>`)
+    .join('');
+  if (previousValue && regions.includes(previousValue)) {
+    select.value = previousValue;
+  }
+}
 
 async function changeMemberApproval(userKey, nextApproved) {
   if (!isAdmin) {
