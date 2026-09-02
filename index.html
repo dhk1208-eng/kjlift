@@ -1356,9 +1356,12 @@ function toNullableNumber(value) {
 }
 
 function prepareTaskForSupabase(task) {
+  // completed 는 Supabase tasks 테이블에 없는 컬럼이므로 클라우드 저장 payload에서 제외합니다.
+  // (완료 상태는 로컬 및 화면 데이터에만 유지됩니다.)
+  const { completed, ...rest } = task;
   return {
     // 중요: 점 3개(...)를 반드시 넣어야 합니다.
-    ...task,
+    ...rest,
 
     // 수량은 숫자 형태로 저장
     quantity: toNullableInteger(task.quantity) ?? 1,
@@ -2636,6 +2639,9 @@ async function executeTaskSave(taskData) {
         savedTask = result.data;
       }
     }
+
+    // 클라우드에는 completed 컬럼이 없으므로, 저장 후에도 완료 상태를 로컬에 유지
+    savedTask = { ...savedTask, completed: Boolean(taskData.completed) };
 
     // 2) 화면/LocalStorage 데이터 반영
     const existingIndex = tasks.findIndex(task => task.id === savedTask.id);
