@@ -3221,8 +3221,8 @@ function renderUtilizationView() {
   document.getElementById('utilization-progress-bar').style.width = `${Math.min(100, rate)}%`;
 
   const sites = Object.keys(siteMap).filter(k => siteMap[k].current > 0);
-  document.getElementById('utilization-site-count').innerText = `${sites.length}개 Active 현장`;
-
+//  document.getElementById('utilization-site-count').innerText = `${sites.length}개 Active 현장`;
+	document.getElementById('utilization-site-count').innerText = `${sites.length}개 Active 현장(총 ${totalActive}대 가동 중)`;
   const listContainer = document.getElementById('utilization-site-list');
   if (sites.length === 0) {
     listContainer.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold">기준일 가동 중인 현장이 없습니다.</div>`;
