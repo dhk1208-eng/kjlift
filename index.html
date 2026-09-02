@@ -2433,6 +2433,7 @@ function openAddTaskModal(defaultDate = '') {
   document.getElementById('form-notes').value = '';
   document.getElementById('btn-delete').classList.add('hidden');
 
+	populateFormRegionOptions();
   const regions = Object.keys(regionTeamData);
   if (regions.length > 0) {
     document.getElementById('form-region').value = regions[0];
@@ -2464,6 +2465,7 @@ function openEditTaskModal(id) {
   document.getElementById('form-mastHeight').value = task.mastHeight || '';
   document.getElementById('form-notes').value = task.notes || '';
 
+	populateFormRegionOptions();
   const region = task.region || Object.keys(regionTeamData)[0];
   document.getElementById('form-region').value = region;
   updateFormTeamDropdowns(region);
