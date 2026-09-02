@@ -2328,9 +2328,10 @@ function openDayDetailSheet(dateStr, dayTasks, holidayName) {
     `;
   } else {
     container.innerHTML = customHolidayBtnHtml + dayTasks.map(t => `
-      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 hover:border-amber-400 transition cursor-pointer" onclick="openEditTaskModal(this.dataset.taskId)" data-task-id="${escapeHtml(String(t.id))}">
+      <div class="p-2.5 bg-slate-50 border ${t.completed ? 'border-red-300 bg-red-50/40' : 'border-slate-200'} rounded-xl space-y-1.5 hover:border-amber-400 transition cursor-pointer" onclick="openEditTaskModal(this.dataset.taskId)" data-task-id="${escapeHtml(String(t.id))}">
         <div class="flex justify-between items-center">
           <span class="badge-${t.workType} px-2 py-0.5 rounded-md text-[10px] font-extrabold">${t.workType}</span>
+          ${t.completed ? `<span class="font-bold text-xs sm:text-sm text-red-600">&lt;&lt;완료&gt;&gt;</span>` : ''}
           ${t.region ? `<span class="text-[10px] text-sky-700 font-black bg-sky-100 px-1.5 py-0.5 rounded"><i class="fa-solid fa-map-pin"></i> ${escapeHtml(String(t.region))}</span>` : ''}
           <span class="font-bold text-slate-800 text-xs">${t.siteName} ${t.workContent ? `(${t.workContent})` : ''}</span>
           <span class="text-[10px] text-amber-700 font-black bg-amber-100 px-1.5 py-0.5 rounded">${t.quantity || 1}대</span>
