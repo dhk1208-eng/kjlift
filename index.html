@@ -254,6 +254,7 @@ body {
 				  </button>
 				
 				  <button
+				    id="btn-export-excel"
 				    onclick="exportTasksToExcel()"
 				    class="bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] px-0.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
 				    title="엑셀 내보내기"
@@ -263,6 +264,7 @@ body {
 				  </button>
 				
 				  <button
+				    id="btn-add-task"
 				    onclick="handleAddTaskClick()"
 				    class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] px-0.5 py-1 rounded-lg font-bold flex items-center gap-0.5 shadow-xs transition"
 				  >
@@ -1636,7 +1638,37 @@ function canEdit() {
   return false;
 }
 
+function updateFeatureButtonsAccess() {
+  // 로그인(일반 사용자 또는 관리자) 상태에서만 주요 기능 버튼 활성화
+  const loggedIn = Boolean(currentUser || isAdmin);
+  const gatedIds = [
+    'btn-export-excel',   // 엑셀
+    'btn-add-task',       // 추가
+    'nav-calendar',       // 일정표
+    'nav-extractor',      // 카톡추출
+    'nav-utilization',    // 가동률
+    'nav-summary'         // 지역/주간요약
+  ];
+  gatedIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (loggedIn) {
+      el.disabled = false;
+      el.removeAttribute('aria-disabled');
+      el.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+      el.title = el.dataset.enabledTitle || el.title || '';
+    } else {
+      el.disabled = true;
+      el.setAttribute('aria-disabled', 'true');
+      el.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+      if (!el.dataset.enabledTitle) el.dataset.enabledTitle = el.title || '';
+      el.title = '로그인 후 사용할 수 있습니다.';
+    }
+  });
+}
+
 function updateAuthUIStatus() {
+  updateFeatureButtonsAccess();
   const adminBadge = document.getElementById('admin-badge');
   const userBadge = document.getElementById('user-auth-badge');
   const adminTools = document.getElementById('admin-active-tools');
