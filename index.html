@@ -948,7 +948,7 @@ body {
       <input type="hidden" id="form-completed" value="">
 
       <!-- 완료 표시 배너 (작업일자 위 빈 공간, 작업일자보다 큰 글자) -->
-      <div id="task-completed-banner" class="hidden text-left font-black text-red-600 tracking-wider" style="font-size:1rem; line-height:1.1;">&lt;&lt;완료&gt;&gt;</div>
+      <div id="task-completed-banner" class="hidden text-center font-black text-red-600 tracking-wider" style="font-size:1.8rem; line-height:1.1;">&lt;&lt;완료&gt;&gt;</div>
 
       <div class="grid grid-cols-2 gap-2">
         <div>
@@ -1056,6 +1056,9 @@ body {
         </button>
         <button id="btn-complete" onclick="markCurrentTaskCompleted()" class="px-3 py-2 text-xs bg-blue-600 text-white font-bold rounded-lg hidden">
           완료
+        </button>
+        <button id="btn-uncomplete" onclick="markCurrentTaskUncompleted()" class="px-3 py-2 text-xs bg-slate-600 text-white font-bold rounded-lg hidden">
+          완료 취소
         </button>
       </div>
       <div class="flex gap-2 ml-auto">
@@ -2507,11 +2510,21 @@ function openEditTaskModal(id) {
     document.getElementById('btn-delete').classList.add('hidden');
   }
 
-  // 완료 버튼은 관리자에게만 노출 (일정 수정 화면)
+  // 완료/완료취소 버튼은 관리자에게만 노출 (일정 수정 화면)
+  const btnComplete = document.getElementById('btn-complete');
+  const btnUncomplete = document.getElementById('btn-uncomplete');
   if (isAdmin) {
-    document.getElementById('btn-complete').classList.remove('hidden');
+    // 미완료면 '완료', 완료면 '완료 취소' 버튼을 노출
+    if (task.completed) {
+      btnComplete.classList.add('hidden');
+      btnUncomplete.classList.remove('hidden');
+    } else {
+      btnComplete.classList.remove('hidden');
+      btnUncomplete.classList.add('hidden');
+    }
   } else {
-    document.getElementById('btn-complete').classList.add('hidden');
+    btnComplete.classList.add('hidden');
+    btnUncomplete.classList.add('hidden');
   }
 
   document.getElementById('task-modal').classList.remove('hidden');
@@ -2525,6 +2538,17 @@ function markCurrentTaskCompleted() {
   }
   document.getElementById('form-completed').value = 'true';
   document.getElementById('task-completed-banner').classList.remove('hidden');
+  saveTaskFromModal();
+}
+
+// 관리자가 '완료 취소'를 누르면 완료 상태를 해제하고 저장합니다.
+function markCurrentTaskUncompleted() {
+  if (!isAdmin) {
+    alert("완료 취소는 관리자만 가능합니다.");
+    return;
+  }
+  document.getElementById('form-completed').value = '';
+  document.getElementById('task-completed-banner').classList.add('hidden');
   saveTaskFromModal();
 }
 
@@ -3167,8 +3191,11 @@ function renderUtilizationView() {
   // 완료 처리된 작업은 가동률 계산에서 제외
   tasks.filter(t => t.date <= targetDate && !t.completed).forEach(t => {
     if (!siteMap[t.siteName]) {
-      siteMap[t.siteName] = { install: 0, dismantle: 0, current: 0 };
+      siteMap[t.siteName] = { install: 0, dismantle: 0, current: 0, region: t.region || '', taskId: t.id };
     }
+    // 권역/대표 일정 id는 최신(가장 마지막) 일정 기준으로 갱신
+    siteMap[t.siteName].region = t.region || siteMap[t.siteName].region;
+    siteMap[t.siteName].taskId = t.id;
     const qty = parseInt(t.quantity, 10) || 1;
     if (t.workType === '설치') {
       siteMap[t.siteName].install += qty;
@@ -3201,9 +3228,9 @@ function renderUtilizationView() {
     listContainer.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold">기준일 가동 중인 현장이 없습니다.</div>`;
   } else {
     listContainer.innerHTML = sites.map(site => `
-      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
+      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs cursor-pointer hover:border-amber-400 transition" onclick="openEditTaskModal(this.dataset.taskId)" data-task-id="${escapeHtml(String(siteMap[site].taskId))}">
         <div>
-          <span class="font-extrabold text-slate-800 block">${site}</span>
+          <span class="font-extrabold text-slate-800 block">${siteMap[site].region ? `<span class="text-sky-700"><i class="fa-solid fa-map-pin"></i> ${escapeHtml(String(siteMap[site].region))}</span> ` : ''}${site}</span>
           <span class="text-[10px] text-slate-500">누적설치: ${siteMap[site].install}대 | 누적해체: ${siteMap[site].dismantle}대</span>
         </div>
         <span class="font-black text-amber-700 bg-amber-100 px-2 py-1 rounded-lg text-xs">${siteMap[site].current}대 가동 중</span>
