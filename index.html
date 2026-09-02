@@ -2333,6 +2333,7 @@ function openDayDetailSheet(dateStr, dayTasks, holidayName) {
           ${t.autoTeam ? `<span>⚙️ ${t.autoTeam}</span>` : ''}
           ${t.shelfTeam ? `<span>🪖 ${t.shelfTeam}</span>` : ''}
         </div>
+        ${t.notes ? `<div class="text-[9.5px] text-slate-600 bg-amber-50 p-1.5 rounded-lg border border-amber-100"><b class="text-amber-800"><i class="fa-solid fa-note-sticky"></i> 비고/담당자메모:</b> ${escapeHtml(String(t.notes))}</div>` : ''}
       </div>
     `).join('');
   }
