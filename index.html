@@ -4270,24 +4270,66 @@ async function deletePendingUser(userKey) {
 //
 //  }
 	try {
+	  console.log('='.repeat(50));
+	  console.log('🗑️ [삭제 시작]');
+	  console.log('='.repeat(50));
+	  console.log('삭제할 사용자 ID:', userKey);
+	  console.log('삭제할 사용자 이름:', targetUser.name);
+	  console.log('현재 로그인 사용자:', currentUser);
+	  console.log('관리자 여부:', isAdmin);
+	  
 	  const { data, error } = await supabaseClient
 	    .from('users')
 	    .delete()
 	    .eq('user_key', userKey)
 	    .select();
 	
-	  if (error) throw error;
+	  console.log('='.repeat(50));
+	  console.log('📊 [삭제 결과]');
+	  console.log('='.repeat(50));
+	  console.log('삭제된 데이터:', data);
+	  console.log('에러:', error);
+	  console.log('='.repeat(50));
+	
+	  if (error) {
+	    console.error('❌ Supabase 에러:');
+	    console.error('  - message:', error.message);
+	    console.error('  - code:', error.code);
+	    console.error('  - details:', error.details);
+	    console.error('  - hint:', error.hint);
+	    throw error;
+	  }
 	  
+	  if (!data || data.length === 0) {
+	    console.warn('⚠️ 삭제된 행이 없습니다.');
+	    alert(
+	      `${targetUser.name} 회원 삭제에 실패했습니다.\n\n` +
+	      '⚠️ Supabase 데이터베이스 권한을 확인하세요:\n' +
+	      '1. F12 콘솔의 "삭제 결과" 섹션을 확인\n' +
+	      '2. Supabase RLS 정책 확인\n' +
+	      '3. 현재 관리자의 role이 "admin"인지 확인'
+	    );
+	    return;
+	  }
+	  
+	  console.log('✅ 삭제 성공!');
 	  alert(`${targetUser.name} 회원을 삭제했습니다.`);
 	  await loadUsersForMemberManagement();
 	}
    catch (error) {
-    console.error('회원 삭제 오류:', error);
+    console.error('='.repeat(50));
+    console.error('❌ [삭제 오류]');
+    console.error('='.repeat(50));
+    console.error('에러:', error);
+    console.error('메시지:', error?.message);
+    console.error('코드:', error?.code);
+    console.error('='.repeat(50));
 
     alert(
-      `회원 삭제에 실패했습니다.\n${
-        error.message || 'Supabase 권한을 확인해주세요.'
-      }`
+      `회원 삭제에 실패했습니다.\n\n` +
+      `에러: ${error?.message || 'Supabase 권한을 확인해주세요.'}\n\n` +
+      `F12 콘솔의 "[삭제 오류]" 섹션을 확인하고,\n` +
+      `Supabase 대시보드에서 RLS 정책을 확인하세요.`
     );
   }  
 }
