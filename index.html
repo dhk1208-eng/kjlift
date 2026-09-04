@@ -2552,6 +2552,57 @@ function handleAddTaskClick() {
   openAddTaskModal();
 }
 
+// ✅ 새 일정 추가 모달 열기 (추가)
+function openAddTaskModal(defaultDate = '') {
+  // 모달 제목 설정 - 등록
+  document.getElementById('modal-title').innerText = "작업 일정 등록";
+  
+  // 입력 필드 초기화
+  document.getElementById('task-id').value = ''; // 빈 값 = 새 일정
+  document.getElementById('form-date').value = defaultDate || new Date().toISOString().split('T')[0];
+  document.getElementById('form-workType').value = '설치';
+  document.getElementById('form-siteName').value = '';
+  document.getElementById('form-workContent').value = '';
+  document.getElementById('form-quantity').value = '1';
+  document.getElementById('form-equipment').value = '';
+  document.getElementById('form-mastCount').value = '';
+  document.getElementById('form-mastHeight').value = '';
+  document.getElementById('form-notes').value = '';
+  document.getElementById('form-completed').value = '';
+  
+  // 지역 설정
+  populateFormRegionOptions();
+  const defaultRegion = Object.keys(regionTeamData)[0];
+  document.getElementById('form-region').value = defaultRegion;
+  updateFormTeamDropdowns(defaultRegion);
+  
+  document.getElementById('form-installTeam').value = '';
+  document.getElementById('form-safetyTeam').value = '';
+  document.getElementById('form-autoTeam').value = '';
+  document.getElementById('form-shelfTeam').value = '';
+  
+  // 완료 배너 숨기기
+  document.getElementById('task-completed-banner').classList.add('hidden');
+  
+  // ✅ 새 일정 추가 모달은 항상 편집 가능 (현재 사용자의 일정)
+  const formInputs = document.querySelectorAll('#task-modal input, #task-modal select, #task-modal textarea');
+  formInputs.forEach(input => {
+    input.disabled = false; // 모두 활성화
+  });
+  
+  // 권한 없음 메시지 숨기기 (새 일정은 권한이 있음)
+  document.getElementById('task-modal-no-permission').classList.add('hidden');
+  
+  // ✅ 버튼 모두 표시
+  document.getElementById('btn-delete').classList.add('hidden'); // 삭제는 숨김 (새 일정이므로)
+  document.getElementById('btn-save').classList.remove('hidden');
+  document.getElementById('btn-complete').classList.add('hidden');
+  document.getElementById('btn-uncomplete').classList.add('hidden');
+  
+  // 모달 열기
+  document.getElementById('task-modal').classList.remove('hidden');
+}
+
 // 작업 등록/수정 창의 권역별 팀 목록을 채웁니다.
 // 기존 파일에는 이 함수 호출만 있고 정의가 빠져 있어, 일정 클릭 시
 // ReferenceError가 발생하며 수정 창이 열리지 않았습니다.
