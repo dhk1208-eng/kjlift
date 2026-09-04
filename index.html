@@ -4232,43 +4232,56 @@ async function deletePendingUser(userKey) {
 //      }`
 //    );
 //  }
-try {
-    console.log('삭제 시작:', userKey, targetUser.name);
-
-    // 먼저 일반 delete 시도
-    const { data: deleteData, error: deleteError } = await supabaseClient
-      .from('users')
-      .delete()
-      .eq('user_key', userKey)
-      .select(); // select()를 추가하여 삭제된 행 반환
-
-    console.log('일반 delete 결과:', { deleteData, deleteError });
-
-    // 일반 delete 성공
-    if (!deleteError && deleteData && deleteData.length > 0) {
-      console.log('삭제 성공:', deleteData);
-      alert(`${targetUser.name} 회원을 삭제했습니다.`);
-      await loadUsersForMemberManagement();
-      return;
-    }
-
-    // RPC 함수로 삭제 시도
-    console.log('RPC 함수로 삭제 시도:', userKey);
-    const { data: rpcData, error: rpcError } = await supabaseClient.rpc('delete_app_user', {
-      p_user_key: userKey
-    });
-
-    console.log('RPC delete 결과:', { rpcData, rpcError });
-
-    if (rpcError) {
-      throw rpcError;
-    }
-
-    console.log('RPC로 삭제 성공:', rpcData);
-    alert(`${targetUser.name} 회원을 삭제했습니다.`);
-    await loadUsersForMemberManagement();
-
-  } catch (error) {
+//try {
+//    console.log('삭제 시작:', userKey, targetUser.name);
+//
+//    // 먼저 일반 delete 시도
+//    const { data: deleteData, error: deleteError } = await supabaseClient
+//      .from('users')
+//      .delete()
+//      .eq('user_key', userKey)
+//      .select(); // select()를 추가하여 삭제된 행 반환
+//
+//    console.log('일반 delete 결과:', { deleteData, deleteError });
+//
+//    // 일반 delete 성공
+//    if (!deleteError && deleteData && deleteData.length > 0) {
+//      console.log('삭제 성공:', deleteData);
+//      alert(`${targetUser.name} 회원을 삭제했습니다.`);
+//      await loadUsersForMemberManagement();
+//      return;
+//    }
+//
+//    // RPC 함수로 삭제 시도
+//    console.log('RPC 함수로 삭제 시도:', userKey);
+//    const { data: rpcData, error: rpcError } = await supabaseClient.rpc('delete_app_user', {
+//      p_user_key: userKey
+//    });
+//
+//    console.log('RPC delete 결과:', { rpcData, rpcError });
+//
+//    if (rpcError) {
+//      throw rpcError;
+//    }
+//
+//    console.log('RPC로 삭제 성공:', rpcData);
+//    alert(`${targetUser.name} 회원을 삭제했습니다.`);
+//    await loadUsersForMemberManagement();
+//
+//  }
+	try {
+	  const { data, error } = await supabaseClient
+	    .from('users')
+	    .delete()
+	    .eq('user_key', userKey)
+	    .select();
+	
+	  if (error) throw error;
+	  
+	  alert(`${targetUser.name} 회원을 삭제했습니다.`);
+	  await loadUsersForMemberManagement();
+	}
+   catch (error) {
     console.error('회원 삭제 오류:', error);
 
     alert(
