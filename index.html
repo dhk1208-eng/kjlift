@@ -2694,17 +2694,12 @@ function openEditTaskModal(id) {
     btnDelete.classList.remove('hidden');
     btnSave.classList.remove('hidden');
     
-    // 완료/완료취소 버튼은 관리자에게만 노출
-    if (isAdmin) {
-      if (task.completed) {
-        btnComplete.classList.add('hidden');
-        btnUncomplete.classList.remove('hidden');
-      } else {
-        btnComplete.classList.remove('hidden');
-        btnUncomplete.classList.add('hidden');
-      }
-    } else {
+    // 완료/완료취소 버튼은 관리자 또는 본인의 일정인 경우 노출
+    if (task.completed) {
       btnComplete.classList.add('hidden');
+      btnUncomplete.classList.remove('hidden');
+    } else {
+      btnComplete.classList.remove('hidden');
       btnUncomplete.classList.add('hidden');
     }
   } else {
@@ -2720,8 +2715,12 @@ function openEditTaskModal(id) {
 
 // 관리자가 '완료' 버튼을 누르면 배너를 표시하고 완료 상태로 저장합니다.
 function markCurrentTaskCompleted() {
-  if (!isAdmin) {
-    alert("완료 처리는 관리자만 가능합니다.");
+  const taskId = document.getElementById('task-id').value;
+  const task = tasks.find(t => String(t.id) === String(taskId));
+  
+  // ✅ 관리자 또는 본인의 일정이어야 완료 처리 가능
+  if (!isAdmin && !canEditTask(task)) {
+    alert("자신이 올린 일정만 완료 처리할 수 있습니다.");
     return;
   }
   document.getElementById('form-completed').value = 'true';
@@ -2729,10 +2728,14 @@ function markCurrentTaskCompleted() {
   saveTaskFromModal();
 }
 
-// 관리자가 '완료 취소'를 누르면 완료 상태를 해제하고 저장합니다.
+// ✅ 완료 취소 - 관리자 또는 본인의 일정만 가능
 function markCurrentTaskUncompleted() {
-  if (!isAdmin) {
-    alert("완료 취소는 관리자만 가능합니다.");
+  const taskId = document.getElementById('task-id').value;
+  const task = tasks.find(t => String(t.id) === String(taskId));
+  
+  // ✅ 관리자 또는 본인의 일정이어야 완료 취소 가능
+  if (!isAdmin && !canEditTask(task)) {
+    alert("자신이 올린 일정만 완료를 취소할 수 있습니다.");
     return;
   }
   document.getElementById('form-completed').value = '';
