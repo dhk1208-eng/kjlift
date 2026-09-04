@@ -1250,9 +1250,26 @@ let totalEquipmentInventory = 50;
 
 let regionTeamData = generateDefaultTeams();
 
+// 서울 시간대(Asia/Seoul)의 현재 날짜 시간을 가져오는 함수
+function getSeoulDateTime() {
+  const now = new Date();
+  const seoulTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  return seoulTime;
+}
+
+// 서울 시간대 오늘 날짜 문자열 (YYYY-MM-DD)을 가져오는 함수
+function getSeoulTodayString() {
+  const seoulDate = getSeoulDateTime();
+  const year = seoulDate.getFullYear();
+  const month = String(seoulDate.getMonth() + 1).padStart(2, '0');
+  const day = String(seoulDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 /*****버젼*****/
 function getAppVersion() {
-  const now = new Date();
+//  const now = new Date();
+	const now = getSeoulDateTime();
 
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -1287,10 +1304,14 @@ window.addEventListener('DOMContentLoaded', () => {
   updateQuickStats();
   renderUtilizationView();
 
-  // Set today as default date for picker
-  const todayStr = new Date().toISOString().split('T')[0];
-  document.getElementById('utilization-date-picker').value = todayStr;
-  document.getElementById('summary-start-date').value = todayStr;
+//	// Set today as default date for picker
+//  const todayStr = new Date().toISOString().split('T')[0];
+//  document.getElementById('utilization-date-picker').value = todayStr;
+//  document.getElementById('summary-start-date').value = todayStr;
+// Set today as default date for picker (Seoul timezone)
+	const todayStr = getSeoulTodayString();
+	document.getElementById('utilization-date-picker').value = todayStr;
+	document.getElementById('summary-start-date').value = todayStr;
 });
 
 function loadLocalState() {
@@ -2148,7 +2169,10 @@ function adminLogout() {
 
 // --- CALENDAR RENDER ---
 function setupInitialDates() {
-  currentDate = new Date(2026, 7, 1); // August 2026
+//  currentDate = new Date(2026, 7, 1); // August 2026
+  // 서울 시간대의 현재 날짜로 초기화
+  const seoulDate = getSeoulDateTime();
+  currentDate = new Date(seoulDate.getFullYear(), seoulDate.getMonth(), 1);
 }
 
 function prevMonth() {
@@ -2162,8 +2186,12 @@ function nextMonth() {
 }
 
 function todayMonth() {
-  currentDate = new Date();
+//  currentDate = new Date();
+//  renderCalendar();
+  const seoulDate = getSeoulDateTime();
+  currentDate = new Date(seoulDate.getFullYear(), seoulDate.getMonth(), 1);
   renderCalendar();
+
 }
 
 function renderCalendar() {
@@ -2208,8 +2236,8 @@ function renderCalendar() {
       return true;
     });
 
-		const isToday = new Date().toISOString().split('T')[0] === dateStr;
-		
+//		const isToday = new Date().toISOString().split('T')[0] === dateStr;
+		const isToday = getSeoulTodayString() === dateStr;		
 		const cell = document.createElement('div');
 		
 		// 오늘 날짜면 칸 전체를 노란색으로 표시
