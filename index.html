@@ -2699,8 +2699,15 @@ function openEditTaskModal(id) {
   const btnUncomplete = document.getElementById('btn-uncomplete');
 
   if (hasEditPermission) {
+//    btnDelete.classList.remove('hidden');
+
+	  // ✅ 완료된 일정은 삭제 버튼 숨김
+	  if (task.completed) {
+	    btnDelete.classList.add('hidden');
+	  } else {
+	    btnDelete.classList.remove('hidden');
+	  }
     // 수정 권한 있음: 버튼 표시
-    btnDelete.classList.remove('hidden');
     btnSave.classList.remove('hidden');
     
     // 완료/완료취소 버튼은 관리자 또는 본인의 일정인 경우 노출
