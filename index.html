@@ -2002,14 +2002,25 @@ async function loginUserFromTable() {
 
     // 단일 로그인: DB의 role 값이 admin이면 관리자 권한을 자동 부여합니다.
     isAdmin = user.role === 'admin';
-    currentUser = {
-      userKey: user.user_key,
-      name: user.name,
-      phone: user.phone || '',
-      username: user.username,
-      role: user.role,
-      approved: isAdmin || Boolean(user.approved)
-    };
+
+//    currentUser = {
+//      userKey: user.user_key,
+//      name: user.name,
+//      phone: user.phone || '',
+//      username: user.username,
+//      role: user.role,
+//      approved: isAdmin || Boolean(user.approved)
+//    };
+
+		// ✅ 관리자가 아닌 경우, 승인되지 않은 사용자는 로그인 불가
+		if (user.role !== 'admin' && !user.approved) {
+		  alert(
+		    `${user.name}님, 로그인이 거부되었습니다.\n\n` +
+		    '관리자의 승인 후 로그인이 가능합니다.\n' +
+		    '승인 대기 중입니다. 잠시 후 다시 시도해주세요.'
+		  );
+		  return;
+		}
 
     localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
     localStorage.removeItem('gukje_is_admin');
