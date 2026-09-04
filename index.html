@@ -948,13 +948,28 @@ body {
 <!-- Modal for Creating / Editing Task -->
 <div id="task-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs modal-layer flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
   <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+<!--
     <div class="p-3.5 bg-slate-900 text-white flex justify-between items-center">
       <div class="flex items-center gap-2">
         <h3 id="modal-title" class="font-bold text-xs sm:text-sm">작업 일정 등록</h3>
       </div>
       <button onclick="closeModal()" class="text-slate-400 active:text-white p-1"><i class="fa-solid fa-xmark text-base"></i></button>
     </div>
-
+-->
+    <div class="p-3.5 bg-slate-900 text-white flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <h3 id="modal-title" class="font-bold text-xs sm:text-sm">작업 일정 등록</h3>
+      </div>
+      <button onclick="closeModal()" class="text-slate-400 active:text-white p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+    </div>
+    <!-- ✅ 권한 없음 메시지 -->
+    <div id="task-modal-no-permission" class="hidden bg-amber-50 border-b border-amber-200 p-3">
+      <p class="text-amber-800 text-xs font-bold flex items-center gap-2">
+        <i class="fa-solid fa-info-circle text-amber-600"></i>
+        본인이 올린 일정만 삭제, 완료, 저장 할 수 있습니다.
+      </p>
+    </div>
+    
     <div class="p-4 overflow-y-auto space-y-3 text-xs custom-scrollbar">
       <input type="hidden" id="task-id">
       <input type="hidden" id="form-completed" value="">
@@ -1073,6 +1088,7 @@ body {
           완료 취소
         </button>
       </div>
+<!--
       <div class="flex gap-2 ml-auto">
         <button onclick="saveTaskFromModal()" class="px-4 py-2 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">
           저장하기
@@ -1081,6 +1097,15 @@ body {
           닫기
         </button>
       </div>
+-->
+      <div class="flex gap-2 ml-auto">
+        <button id="btn-save" onclick="saveTaskFromModal()" class="px-4 py-2 text-xs bg-emerald-600 text-white font-bold rounded-lg shadow-xs">
+          저장하기
+        </button>
+        <button onclick="closeModal()" class="px-3 py-2 text-xs bg-slate-200 text-slate-700 font-bold rounded-lg">
+          닫기
+        </button>
+      </div>      
     </div>
   </div>
 </div>
@@ -2611,33 +2636,6 @@ function updateFormTeamDropdowns(region) {
   setOptions('form-shelfTeam', teamData.shelf);
 }
 
-function openAddTaskModal(defaultDate = '') {
-  document.getElementById('modal-title').innerText = "작업 일정 등록";
-  document.getElementById('task-id').value = '';
-  document.getElementById('form-date').value = defaultDate || new Date().toISOString().split('T')[0];
-  document.getElementById('form-workType').value = '설치';
-  document.getElementById('form-siteName').value = '';
-  document.getElementById('form-workContent').value = '';
-  document.getElementById('form-quantity').value = '1';
-  document.getElementById('form-equipment').value = '';
-  document.getElementById('form-mastCount').value = '';
-  document.getElementById('form-mastHeight').value = '';
-  document.getElementById('form-notes').value = '';
-  document.getElementById('form-completed').value = '';
-  document.getElementById('task-completed-banner').classList.add('hidden');
-  document.getElementById('btn-complete').classList.add('hidden');
-  document.getElementById('btn-delete').classList.add('hidden');
-
-	populateFormRegionOptions();
-  const regions = Object.keys(regionTeamData);
-  if (regions.length > 0) {
-    document.getElementById('form-region').value = regions[0];
-    updateFormTeamDropdowns(regions[0]);
-  }
-
-  document.getElementById('task-modal').classList.remove('hidden');
-}
-
 function openEditTaskModal(id) {
   const task = tasks.find(t => String(t.id) === String(id));
   if (!task) {
@@ -2646,11 +2644,8 @@ function openEditTaskModal(id) {
     return;
   }
 
-  // ✅ 권한 검증 추가
-  if (!canEditTask(task)) {
-    alert('다른 사용자의 일정은 수정할 수 없습니다.\n(관리자만 모든 일정 수정 가능)');
-    return;
-  }
+  // ✅ 권한 체크: 수정 권한 있는지 확인
+  const hasEditPermission = canEditTask(task);
 
   closeDayDetailModal();
 
@@ -2684,25 +2679,48 @@ function openEditTaskModal(id) {
     document.getElementById('task-completed-banner').classList.add('hidden');
   }
 
-  if (canEdit()) {
-    document.getElementById('btn-delete').classList.remove('hidden');
+  // ✅ 권한 없으면 모든 입력 필드 disabled 처리
+  const formInputs = document.querySelectorAll('#task-modal input, #task-modal select, #task-modal textarea');
+  formInputs.forEach(input => {
+    input.disabled = !hasEditPermission;
+  });
+
+  // ✅ 권한 없음 메시지 표시/숨김
+  const noPermissionMsg = document.getElementById('task-modal-no-permission');
+  if (!hasEditPermission) {
+    noPermissionMsg.classList.remove('hidden');
   } else {
-    document.getElementById('btn-delete').classList.add('hidden');
+    noPermissionMsg.classList.add('hidden');
   }
 
-  // 완료/완료취소 버튼은 관리자에게만 노출 (일정 수정 화면)
+  // ✅ 버튼 표시/숨김
+  const btnDelete = document.getElementById('btn-delete');
+  const btnSave = document.getElementById('btn-save');
   const btnComplete = document.getElementById('btn-complete');
   const btnUncomplete = document.getElementById('btn-uncomplete');
-  if (isAdmin) {
-    // 미완료면 '완료', 완료면 '완료 취소' 버튼을 노출
-    if (task.completed) {
-      btnComplete.classList.add('hidden');
-      btnUncomplete.classList.remove('hidden');
+
+  if (hasEditPermission) {
+    // 수정 권한 있음: 버튼 표시
+    btnDelete.classList.remove('hidden');
+    btnSave.classList.remove('hidden');
+    
+    // 완료/완료취소 버튼은 관리자에게만 노출
+    if (isAdmin) {
+      if (task.completed) {
+        btnComplete.classList.add('hidden');
+        btnUncomplete.classList.remove('hidden');
+      } else {
+        btnComplete.classList.remove('hidden');
+        btnUncomplete.classList.add('hidden');
+      }
     } else {
-      btnComplete.classList.remove('hidden');
+      btnComplete.classList.add('hidden');
       btnUncomplete.classList.add('hidden');
     }
   } else {
+    // 수정 권한 없음: 모든 버튼 숨김 (닫기만 남음)
+    btnDelete.classList.add('hidden');
+    btnSave.classList.add('hidden');
     btnComplete.classList.add('hidden');
     btnUncomplete.classList.add('hidden');
   }
@@ -2752,6 +2770,21 @@ function saveTaskFromModal() {
     return;
   }
 
+  // ✅ 기존 일정 수정 시 권한 검증
+  const taskId = document.getElementById('task-id').value;
+  if (taskId) {
+    const existingTask = tasks.find(t => String(t.id) === String(taskId));
+    if (existingTask && !canEditTask(existingTask)) {
+      alert("다른 사용자의 일정은 수정할 수 없습니다.\n(관리자만 모든 일정 수정 가능)");
+      return;
+    }
+  }
+
+  if (!canEdit()) {
+    alert("권한이 없습니다.");
+    return;
+  }
+  
   const id = document.getElementById('task-id').value;
   const date = document.getElementById('form-date').value;
   const workType = document.getElementById('form-workType').value;
