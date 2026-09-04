@@ -659,30 +659,6 @@ body {
     <div id="signup-form-panel" class="hidden p-5 space-y-3">
       <div>
         <label class="font-bold text-slate-700 block mb-1 text-xs">
-          성명 *
-        </label>
-        <input
-          type="text"
-          id="auth-signup-name"
-          placeholder="예: 홍길동"
-          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none text-sm focus:border-emerald-600"
-        >
-      </div>
-
-      <div>
-        <label class="font-bold text-slate-700 block mb-1 text-xs">
-          연락처 *
-        </label>
-        <input
-          type="tel"
-          id="auth-signup-phone"
-          placeholder="예: 01012345678"
-          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-emerald-600"
-        >
-      </div>
-
-      <div>
-        <label class="font-bold text-slate-700 block mb-1 text-xs">
           아이디 *
         </label>
         <input
@@ -703,6 +679,30 @@ body {
           id="auth-signup-password"
           autocomplete="new-password"
           placeholder="비밀번호 4자 이상"
+          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-emerald-600"
+        >
+      </div>
+
+      <div>
+        <label class="font-bold text-slate-700 block mb-1 text-xs">
+          성명 *
+        </label>
+        <input
+          type="text"
+          id="auth-signup-name"
+          placeholder="예: 홍길동"
+          class="w-full border border-slate-300 rounded-lg p-2.5 outline-none text-sm focus:border-emerald-600"
+        >
+      </div>
+
+      <div>
+        <label class="font-bold text-slate-700 block mb-1 text-xs">
+          연락처 *
+        </label>
+        <input
+          type="tel"
+          id="auth-signup-phone"
+          placeholder="예: 01012345678"
           class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-emerald-600"
         >
       </div>
@@ -2022,7 +2022,7 @@ async function loginUserFromTable() {
 		startInactivityTimer(); //로그인 시 타이머 시작
 
     if (isAdmin) {
-      alert(`${currentUser.name} 관리자님, 로그인되었습니다.\n관리자 권한 및 기능이 활성화되었습니다.`);
+      alert(`${currentUser.name} 관리자님, 로그인되었습니다.`);
     } else if (currentUser.approved) {
       alert(`${currentUser.name}님, 로그인되었습니다.\n일정 등록 및 수정이 가능합니다.`);
     } else {
@@ -2070,37 +2070,62 @@ async function registerUserToTable() {
 
     if (error) throw error;
 
+//    const user = Array.isArray(data) ? data[0] : data;
+//
+//    if (!user) {
+//      throw new Error('회원가입 결과를 확인할 수 없습니다.');
+//    }
+//
+//    currentUser = {
+//      userKey: user.user_key,
+//      name: user.name,
+//      phone: user.phone || '',
+//      username: user.username,
+//      role: user.role,
+//      approved: Boolean(user.approved)
+//    };
+//
+//    localStorage.setItem(
+//      'gukje_current_user',
+//      JSON.stringify(currentUser)
+//    );
+//
+////    updateAuthUIStatus();
+////    closeUserAuthModal();
+//
+//		updateAuthUIStatus();
+//		closeUserAuthModal();
+//		startInactivityTimer(); //회원가입 후 타이머 시작
+//
+//    alert(
+//      `${currentUser.name}님, 회원가입이 완료되었습니다.\n` +
+//      '관리자 승인 후 일정 등록 및 수정이 가능합니다.'
+//    );
     const user = Array.isArray(data) ? data[0] : data;
 
     if (!user) {
       throw new Error('회원가입 결과를 확인할 수 없습니다.');
     }
 
-    currentUser = {
-      userKey: user.user_key,
-      name: user.name,
-      phone: user.phone || '',
-      username: user.username,
-      role: user.role,
-      approved: Boolean(user.approved)
-    };
+    // 회원가입 후 자동 로그인 하지 않음
+    // currentUser 설정 안 함
+    // localStorage에 저장 안 함
 
-    localStorage.setItem(
-      'gukje_current_user',
-      JSON.stringify(currentUser)
-    );
-
-//    updateAuthUIStatus();
-//    closeUserAuthModal();
-
-		updateAuthUIStatus();
-		closeUserAuthModal();
-		startInactivityTimer(); //회원가입 후 타이머 시작
-
+    // 회원가입 완료 알림
     alert(
-      `${currentUser.name}님, 회원가입이 완료되었습니다.\n` +
+      `${user.name}님, 회원가입이 완료되었습니다.\n` +
       '관리자 승인 후 일정 등록 및 수정이 가능합니다.'
     );
+
+    // 입력 필드 초기화
+    document.getElementById('auth-signup-name').value = '';
+    document.getElementById('auth-signup-phone').value = '';
+    document.getElementById('auth-signup-username').value = '';
+    document.getElementById('auth-signup-password').value = '';
+
+    // 로그인 화면으로 전환
+    showAuthMode('login');
+    closeUserAuthModal();
   } catch (error) {
     console.error('회원가입 오류:', error);
     alert(`회원가입에 실패했습니다.\n${error.message || '입력 정보를 확인해주세요.'}`);
