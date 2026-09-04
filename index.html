@@ -1866,7 +1866,7 @@ function openAccountAction(action) {
       <div class="space-y-3">
         ${currentUser ? `<p class="text-xs text-slate-500">아이디: <span class="font-mono font-bold text-slate-700">${escapeHtml(currentUser.username)}</span></p>` : `<input id="account-username" type="text" autocomplete="username" placeholder="아이디" class="${inputClass}">`}
         <input id="account-current-password" type="password" autocomplete="current-password" placeholder="기존 비밀번호" class="${inputClass}">
-        <input id="account-new-password" type="password" autocomplete="new-password" placeholder="새로운 비밀번호 (4자 이상)" class="${inputClass}">
+				<input id="account-new-password" type="password" autocomplete="new-password" placeholder="새로운 비밀번호 (영문+숫자+특수문자, 8자 이상)" class="...">        
         <input id="account-new-password-confirm" type="password" autocomplete="new-password" placeholder="새로운 비밀번호 확인" class="${inputClass}">
         <button type="button" onclick="changePasswordFromTable()" class="w-full py-2.5 bg-sky-900 text-white font-bold rounded-lg text-sm hover:bg-sky-800">변경하기</button>
       </div>`;
@@ -1926,8 +1926,28 @@ async function changePasswordFromTable() {
   const newPassword = document.getElementById('account-new-password').value;
   const confirmedPassword = document.getElementById('account-new-password-confirm').value;
   if (!username || !currentPassword || !newPassword || !confirmedPassword) return alert('모든 항목을 입력해주세요.');
-  if (newPassword.length < 4) return alert('새 비밀번호는 4자 이상 입력해주세요.');
+//  if (newPassword.length < 4) return alert('새 비밀번호는 4자 이상 입력해주세요.');
+//  if (newPassword !== confirmedPassword) return alert('새 비밀번호와 확인이 일치하지 않습니다.');
+
+  // 새 비밀번호 규칙 검증
+  if (newPassword.length < 8) {
+    return alert('새 비밀번호는 8자 이상 입력해주세요.');
+  }
+  
+  if (!/[a-zA-Z]/.test(newPassword)) {
+    return alert('새 비밀번호는 영문알파벳을 포함해야 합니다.');
+  }
+  
+  if (!/[0-9]/.test(newPassword)) {
+    return alert('새 비밀번호는 숫자를 포함해야 합니다.');
+  }
+  
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) {
+    return alert('새 비밀번호는 특수문자를 포함해야 합니다.');
+  }
+  
   if (newPassword !== confirmedPassword) return alert('새 비밀번호와 확인이 일치하지 않습니다.');
+
   try {
     const result = await callUserRpc('change_app_user_password', { p_username: username, p_current_password: currentPassword, p_new_password: newPassword });
     if (!result) return alert('기존 비밀번호가 일치하지 않습니다.');
@@ -2009,9 +2029,8 @@ async function loginUserFromTable() {
     // 관리자가 아닌 경우, 승인되지 않은 사용자는 로그인 불가
     if (userRole !== 'admin' && !userApproved) {
       alert(
-        `${userName}님, 로그인이 거부되었습니다.\n\n` +
-        '관리자의 승인 후 로그인이 가능합니다.\n' +
-        '승인 대기 중입니다. 잠시 후 다시 시도해주세요.'
+        `${userName}님, 승인 대기 중입니다.\n\n` +
+        '관리자 승인 후 다시 시도해주세요.'
       );
       return;
     }
@@ -2064,8 +2083,29 @@ async function registerUserToTable() {
     return;
   }
 
-  if (password.length < 4) {
-    alert('비밀번호는 4자 이상 입력해주세요.');
+//  if (password.length < 4) {
+//    alert('비밀번호는 4자 이상 입력해주세요.');
+//    return;
+//  }
+
+  // 비밀번호 규칙 검증
+  if (password.length < 8) {
+    alert('비밀번호는 8자 이상 입력해주세요.');
+    return;
+  }
+  
+  if (!/[a-zA-Z]/.test(password)) {
+    alert('비밀번호는 영문알파벳을 포함해야 합니다.');
+    return;
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    alert('비밀번호는 숫자를 포함해야 합니다.');
+    return;
+  }
+  
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    alert('비밀번호는 특수문자를 포함해야 합니다.');
     return;
   }
 
