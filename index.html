@@ -2746,6 +2746,9 @@ function saveTaskFromModal() {
     return;
   }
 
+  // ✅ 새 일정인지 기존 일정인지 확인
+  const isNewTask = !id;
+  
   const taskData = {
     id: id || 'loc_' + Date.now() + Math.random().toString(36).substr(2, 4),
     date, workType, region, siteName, workContent, quantity, equipment,
@@ -2758,12 +2761,8 @@ function saveTaskFromModal() {
     notes,
     completed,
     updatedAt: new Date().toISOString(),
-//    creator_user_key: currentTaskId ? existingTask?.creator_user_key : currentUser?.userKey
-
-		// ✅ 새 일정인지 기존 일정인지 확인
-		const isNewTask = !id;
-
-		creator_user_key: isNewTask ? currentUser?.userKey : (existingTask?.creator_user_key || currentUser?.userKey)
+    // ✅ 새 일정은 현재 사용자, 기존 일정은 원래 생성자 유지
+    creator_user_key: isNewTask ? currentUser?.userKey : (existingTask?.creator_user_key || currentUser?.userKey)
   };
 
   // Check team duplicate on same day
