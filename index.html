@@ -4066,6 +4066,33 @@ function renderMemberManagementList(users) {
               : '<i class="fa-solid fa-user-check mr-1"></i>승인'
           }
         </button>
+        
+        
+        
+        
+        
+        
+        
+        
+        ${
+          !approved
+            ? `<button
+              type="button"
+              onclick="deletePendingUser('${user.user_key}')"
+              class="shrink-0 px-3 py-2 rounded-lg text-xs font-bold bg-red-100 text-red-700 hover:bg-red-200"
+            >
+              <i class="fa-solid fa-trash mr-1"></i>삭제
+            </button>`
+            : ''
+        }
+        
+        
+        
+        
+        
+        
+        
+        
         </div>
       </div>
     `;
@@ -4141,6 +4168,66 @@ async function changeMemberApproval(userKey, nextApproved) {
 
     alert(
       `승인 상태 변경에 실패했습니다.\n${
+        error.message || 'Supabase 권한을 확인해주세요.'
+      }`
+    );
+  }
+}
+
+async function deletePendingUser(userKey) {
+  if (!isAdmin) {
+    alert('관리자만 회원을 삭제할 수 있습니다.');
+    return;
+  }
+
+  if (!supabaseClient) {
+    alert('Supabase 연결이 준비되지 않았습니다.');
+    return;
+  }
+
+  const targetUser = userPermissions.find(
+    (user) => user.user_key === userKey
+  );
+
+  if (!targetUser) {
+    alert('대상 회원 정보를 찾을 수 없습니다.');
+    return;
+  }
+
+  // 승인 대기 상태인지 확인
+  if (targetUser.approved) {
+    alert('승인된 회원은 삭제할 수 없습니다. 먼저 승인을 취소해주세요.');
+    return;
+  }
+
+  // 현재 로그인한 관리자 본인은 삭제하지 못하게 합니다.
+  if (String(targetUser.user_key) === String(currentUser?.userKey || '')) {
+    alert('현재 로그인한 관리자 계정은 삭제할 수 없습니다.');
+    return;
+  }
+
+  if (!confirm(`${targetUser.name} 회원을 삭제하시겠습니까?\n삭제된 회원은 복구할 수 없습니다.`)) {
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('users')
+      .delete()
+      .eq('user_key', userKey);
+
+    if (error) {
+      throw error;
+    }
+
+    alert(`${targetUser.name} 회원을 삭제했습니다.`);
+
+    await loadUsersForMemberManagement();
+  } catch (error) {
+    console.error('회원 삭제 오류:', error);
+
+    alert(
+      `회원 삭제에 실패했습니다.\n${
         error.message || 'Supabase 권한을 확인해주세요.'
       }`
     );
