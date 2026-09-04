@@ -2313,6 +2313,41 @@ function todayMonth() {
 
 }
 
+// ✅ 일정 유형 필터 (설치/해체/인상)
+function setFilter(filter) {
+  selectedFilter = filter;
+  
+  // 버튼 스타일 업데이트
+  document.getElementById('filter-all').classList.toggle('bg-slate-900', filter === '전체');
+  document.getElementById('filter-all').classList.toggle('text-white', filter === '전체');
+  document.getElementById('filter-all').classList.toggle('bg-slate-100', filter !== '전체');
+  document.getElementById('filter-all').classList.toggle('text-slate-600', filter !== '전체');
+  
+  document.getElementById('filter-설치').classList.toggle('bg-sky-100', filter === '설치');
+  document.getElementById('filter-설치').classList.toggle('text-sky-700', filter === '설치');
+  document.getElementById('filter-설치').classList.toggle('bg-slate-100', filter !== '설치');
+  document.getElementById('filter-설치').classList.toggle('text-slate-600', filter !== '설치');
+  
+  document.getElementById('filter-해체').classList.toggle('bg-red-100', filter === '해체');
+  document.getElementById('filter-해체').classList.toggle('text-red-700', filter === '해체');
+  document.getElementById('filter-해체').classList.toggle('bg-slate-100', filter !== '해체');
+  document.getElementById('filter-해체').classList.toggle('text-slate-600', filter !== '해체');
+  
+  document.getElementById('filter-인상').classList.toggle('bg-amber-100', filter === '인상');
+  document.getElementById('filter-인상').classList.toggle('text-amber-700', filter === '인상');
+  document.getElementById('filter-인상').classList.toggle('bg-slate-100', filter !== '인상');
+  document.getElementById('filter-인상').classList.toggle('text-slate-600', filter !== '인상');
+  
+  // 달력 다시 그리기
+  renderCalendar();
+}
+
+// ✅ 지역 필터
+function setRegionFilter(region) {
+  selectedRegionFilter = region;
+  renderCalendar();
+}
+
 function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
