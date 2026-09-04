@@ -967,12 +967,12 @@ body {
     </div>
 -->
     
-    <div class="p-4 overflow-y-auto space-y-3 text-xs custom-scrollbar">
+    <div class="p-4 overflow-y-auto space-y-2 text-xs custom-scrollbar">
       <input type="hidden" id="task-id">
       <input type="hidden" id="form-completed" value="">
 
       <!-- 완료 표시 배너 (작업일자 위 빈 공간, 작업일자보다 큰 글자) -->
-      <div id="task-completed-banner" class="hidden text-left font-black text-red-600 tracking-wider" style="font-size:1rem; line-height:1.1;">&lt;&lt;완료&gt;&gt;</div>
+      <div id="task-completed-banner" class="hidden text-left font-black text-red-600 tracking-wider mb-0" style="font-size:1rem; line-height:1.1;">&lt;&lt;완료&gt;&gt;</div>
 
       <div class="grid grid-cols-2 gap-2">
         <div>
@@ -1076,7 +1076,7 @@ body {
 
 
     <div id="task-modal-no-permission" class="hidden bg-amber-50 border-b border-amber-200 p-3">
-      <p class="text-amber-800 text-xs font-bold flex items-center gap-2">
+      <p class="text-amber-800 text-xs font-bold flex items-center gap-1">
         <i class="fa-solid fa-info-circle text-amber-600"></i>
         본인이 올린 일정만 삭제, 완료, 저장 할 수 있습니다.
       </p>
