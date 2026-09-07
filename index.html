@@ -3380,19 +3380,39 @@ async function openTaskLogsModal() {
       return;
     }
 
+//    // 일정의 주요 식별 정보
+//    task_date: task.date || null,
+//    site_name: task.siteName || null,
+//    work_type: task.workType || null,
+//    region: task.region || null,
+//
+//    // ✅ 추가: 작업 상세 필드
+//    work_content: task.workContent || null,
+//    quantity: task.quantity ?? null,
+//    equipment: task.equipment || null,
+//    install_team: task.installTeam || null,
+//    safety_team: task.safetyTeam || null,
+//    auto_team: task.autoTeam || null,
+//    shelf_team: task.shelfTeam || null,
+//    mast_count: task.mastCount ?? null,
+//    mast_height: task.mastHeight ?? null,
+//    notes: task.notes || null,
+//    completed: Boolean(task.completed),
+
     list.innerHTML = logs.map(log => {
       const actionLabel = escapeHtml(getLogActionLabel(log.action));
       const actionStyle = getLogActionStyle(log.action);
 
-      const siteName  = escapeHtml(log.site_name || '현장명 없음');
-      const taskDate  = escapeHtml(log.task_date || '-');
-      const region    = escapeHtml(log.region || '-');
-      const workType  = escapeHtml(log.work_type || '-');
+      const siteName     = escapeHtml(log.site_name || '현장명 없음');
+      const work_content = escapeHtml(log.workContent || '작업내용 없음');
+      const taskDate     = escapeHtml(log.task_date || '-');
+      const region       = escapeHtml(log.region || '-');
+      const workType     = escapeHtml(log.work_type || '-');
 
-      const userName  = escapeHtml(log.user_name || '알 수 없음');
-      const userPhone = escapeHtml(log.user_phone || '');
-      const message   = escapeHtml(log.message || '-');
-      const createdAt = escapeHtml(formatLogDateTime(log.created_at));
+      const userName     = escapeHtml(log.user_name || '알 수 없음');
+      const userPhone    = escapeHtml(log.user_phone || '');
+      const message      = escapeHtml(log.message || '-');
+      const createdAt    = escapeHtml(formatLogDateTime(log.created_at));
 
       const beforeData = log.before_data
         ? escapeHtml(JSON.stringify(log.before_data, null, 2))
@@ -3407,7 +3427,7 @@ async function openTaskLogsModal() {
           <div class="flex justify-between gap-2 items-start">
             <div class="min-w-0">
               <p class="font-extrabold text-xs text-slate-800 truncate">
-                현장명:${siteName} / 작업내용:
+                현장명:${siteName} / 작업내용:${work_content}
               </p>
 
               <p class="mt-0.5 text-[10px] text-slate-500">
