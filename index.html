@@ -1478,9 +1478,26 @@ async function writeTaskLog({
     work_type: task.workType || null,
     region: task.region || null,
 
+    // ✅ 추가: 작업 상세 필드
+    work_content: task.workContent || null,
+    quantity: task.quantity ?? null,
+    equipment: task.equipment || null,
+    install_team: task.installTeam || null,
+    safety_team: task.safetyTeam || null,
+    auto_team: task.autoTeam || null,
+    shelf_team: task.shelfTeam || null,
+    mast_count: task.mastCount ?? null,
+    mast_height: task.mastHeight ?? null,
+    notes: task.notes || null,
+    completed: Boolean(task.completed),
+
+    // ✅ 추가: 등록자(생성자) 정보
+    creator_user_key: task.creator_user_key || null,
+    creator_user_name: task.creator_user_name || null,
+
     message: message,
 
-    // PostgreSQL jsonb로 저장
+    // PostgreSQL jsonb로 저장 (전체 스냅샷은 그대로 보존)
     before_data: beforeData,
     after_data: afterData
   };
@@ -3390,7 +3407,7 @@ async function openTaskLogsModal() {
           <div class="flex justify-between gap-2 items-start">
             <div class="min-w-0">
               <p class="font-extrabold text-xs text-slate-800 truncate">
-                현장명:${siteName} / 
+                현장명:${siteName} / 작업내용:
               </p>
 
               <p class="mt-0.5 text-[10px] text-slate-500">
