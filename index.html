@@ -3435,10 +3435,13 @@ async function openTaskLogsModal() {
       const createdAt    = escapeHtml(formatLogDateTime(log.created_at));
       const shortCreatedAt = escapeHtml(formatShortDateTime(log.created_at));
 
-      // ✅ 수정(UPDATE) 로그는 현장명 대신 수정자/시간을 표시
-      const displayMessage = log.action === 'UPDATE'
-        ? `일정 수정 (수정자: ${userName} / ${shortCreatedAt})`
-        : message;
+      // ✅ 등록/수정/삭제 로그 모두 현장명 대신 처리자/시간을 표시
+      const actionMessageMap = {
+        CREATE: `일정 등록 (등록자: ${userName} / ${shortCreatedAt})`,
+        UPDATE: `일정 수정 (수정자: ${userName} / ${shortCreatedAt})`,
+        DELETE: `일정 삭제 (삭제자: ${userName} / ${shortCreatedAt})`
+      };
+      const displayMessage = actionMessageMap[log.action] || message;
 
       const beforeData = log.before_data
         ? escapeHtml(JSON.stringify(log.before_data, null, 2))
