@@ -3404,7 +3404,7 @@ async function openTaskLogsModal() {
       const actionStyle = getLogActionStyle(log.action);
 
       const siteName     = escapeHtml(log.site_name || '현장명 없음');
-      const work_content = escapeHtml(log.workContent || '작업내용 없음');
+      const work_content = escapeHtml(log.work_content || '작업내용 없음');
       const taskDate     = escapeHtml(log.task_date || '-');
       const region       = escapeHtml(log.region || '-');
       const workType     = escapeHtml(log.work_type || '-');
