@@ -3367,14 +3367,14 @@ async function openTaskLogsModal() {
       const actionLabel = escapeHtml(getLogActionLabel(log.action));
       const actionStyle = getLogActionStyle(log.action);
 
-      const siteName = escapeHtml(log.site_name || '현장명 없음');
-      const taskDate = escapeHtml(log.task_date || '-');
-      const region = escapeHtml(log.region || '-');
-      const workType = escapeHtml(log.work_type || '-');
+      const siteName  = escapeHtml(log.site_name || '현장명 없음');
+      const taskDate  = escapeHtml(log.task_date || '-');
+      const region    = escapeHtml(log.region || '-');
+      const workType  = escapeHtml(log.work_type || '-');
 
-      const userName = escapeHtml(log.user_name || '알 수 없음');
+      const userName  = escapeHtml(log.user_name || '알 수 없음');
       const userPhone = escapeHtml(log.user_phone || '');
-      const message = escapeHtml(log.message || '-');
+      const message   = escapeHtml(log.message || '-');
       const createdAt = escapeHtml(formatLogDateTime(log.created_at));
 
       const beforeData = log.before_data
@@ -3390,7 +3390,7 @@ async function openTaskLogsModal() {
           <div class="flex justify-between gap-2 items-start">
             <div class="min-w-0">
               <p class="font-extrabold text-xs text-slate-800 truncate">
-                ${siteName}
+                현장명:${siteName} / 
               </p>
 
               <p class="mt-0.5 text-[10px] text-slate-500">
