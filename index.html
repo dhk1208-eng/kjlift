@@ -3321,6 +3321,26 @@ function formatLogDateTime(value) {
   });
 }
 
+// 수정자 표시용 짧은 날짜 형식 (예: 09-07 14:23)
+function formatShortDateTime(value) {
+  if (!value) {
+    return '-';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mi = String(date.getMinutes()).padStart(2, '0');
+
+  return `${mm}-${dd} ${hh}:${mi}`;
+}
+
 async function openTaskLogsModal() {
   if (!isAdmin) {
     alert('관리자만 작업 로그를 조회할 수 있습니다.');
@@ -3413,6 +3433,12 @@ async function openTaskLogsModal() {
       const userPhone    = escapeHtml(log.user_phone || '');
       const message      = escapeHtml(log.message || '-');
       const createdAt    = escapeHtml(formatLogDateTime(log.created_at));
+      const shortCreatedAt = escapeHtml(formatShortDateTime(log.created_at));
+
+      // ✅ 수정(UPDATE) 로그는 현장명 대신 수정자/시간을 표시
+      const displayMessage = log.action === 'UPDATE'
+        ? `일정 수정 (수정자: ${userName} / ${shortCreatedAt})`
+        : message;
 
       const beforeData = log.before_data
         ? escapeHtml(JSON.stringify(log.before_data, null, 2))
@@ -3442,17 +3468,9 @@ async function openTaskLogsModal() {
           </div>
 
           <div class="mt-2 pt-2 border-t border-slate-100">
-            <div class="flex justify-between items-start gap-2">
-              <p class="text-[11px] text-slate-600 min-w-0">
-                ${message}
-              </p>
-
-              ${log.action === 'UPDATE' ? `
-                <p class="shrink-0 text-[10px] font-bold text-amber-700 whitespace-nowrap">
-                  수정자: ${userName} / ${createdAt}
-                </p>
-              ` : ''}
-            </div>
+            <p class="text-[11px] text-slate-600">
+              ${displayMessage}
+            </p>
 
             <div class="mt-1.5 flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-slate-400">
               <span>
