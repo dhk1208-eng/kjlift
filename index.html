@@ -1565,6 +1565,7 @@ async function initCloudIfConfigured() {
     await loadTasksFromSupabase();
     await loadHolidaysFromSupabase();
     await loadUsersFromSupabase();
+    await loadRegionTeamsFromSupabase();
     subscribeToRealtimeChanges();
 
     isCloudConnected = true;
@@ -1697,6 +1698,114 @@ async function loadUsersFromSupabase() {
   }
 }
 
+// --- 권역/지역 및 분야별 팀 (region_teams) 클라우드 동기화 -----------
+async function loadRegionTeamsFromSupabase() {
+  const { data, error } = await supabaseClient
+    .from('region_teams')
+    .select('*')
+    .order('region', { ascending: true });
+
+  if (error) throw error;
+
+  if (data && data.length > 0) {
+    const loaded = {};
+    data.forEach(row => {
+      loaded[row.region] = {
+        install: row.install || [],
+        safety: row.safety || [],
+        auto: row.auto || [],
+        shelf: row.shelf || []
+      };
+    });
+    regionTeamData = loaded;
+  } else {
+    // DB에 저장된 팀 데이터가 아직 없으면 기본 25개팀 데이터를 최초 1회 업로드
+    regionTeamData = generateDefaultTeams();
+    try {
+      await pushAllRegionTeamsToSupabase(regionTeamData);
+    } catch (uploadError) {
+      console.warn('기본 팀 데이터 최초 업로드 실패:', uploadError);
+    }
+  }
+
+  saveLocalState(); // 오프라인 표시용 캐시
+  populateFormRegionOptions();
+}
+
+async function pushAllRegionTeamsToSupabase(data) {
+  if (!supabaseClient) return;
+
+  const rows = Object.keys(data).map(region => ({
+    region,
+    install: data[region].install || [],
+    safety: data[region].safety || [],
+    auto: data[region].auto || [],
+    shelf: data[region].shelf || [],
+    updated_at: new Date().toISOString()
+  }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabaseClient
+    .from('region_teams')
+    .upsert(rows, { onConflict: 'region' });
+
+  if (error) throw error;
+}
+
+async function saveRegionTeamToSupabase(region, teamData) {
+  if (!supabaseClient || !isCloudConnected) {
+    console.warn('⚠️ Supabase 연결 안 됨 - 로컬에만 저장됩니다.');
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from('region_teams')
+    .upsert({
+      region,
+      install: teamData.install || [],
+      safety: teamData.safety || [],
+      auto: teamData.auto || [],
+      shelf: teamData.shelf || [],
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'region' });
+
+  if (error) throw error;
+}
+
+async function deleteRegionTeamFromSupabase(region) {
+  if (!supabaseClient || !isCloudConnected) {
+    console.warn('⚠️ Supabase 연결 안 됨 - 로컬에서만 삭제됩니다.');
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from('region_teams')
+    .delete()
+    .eq('region', region);
+
+  if (error) throw error;
+}
+
+async function replaceAllRegionTeamsInSupabase(data) {
+  if (!supabaseClient || !isCloudConnected) {
+    console.warn('⚠️ Supabase 연결 안 됨 - 로컬에서만 초기화됩니다.');
+    return;
+  }
+
+  // 기존 전체 삭제 후 재삽입 (region은 빈 문자열일 수 없으므로 neq 트릭 사용)
+  const { error: deleteError } = await supabaseClient
+    .from('region_teams')
+    .delete()
+    .neq('region', '');
+
+  if (deleteError) throw deleteError;
+
+  await pushAllRegionTeamsToSupabase(data);
+}
+// --- 권역/지역 및 분야별 팀 (region_teams) 클라우드 동기화 -----------
+
+
 function subscribeToRealtimeChanges() {
   if (realtimeChannel) {
     supabaseClient.removeChannel(realtimeChannel);
@@ -1723,6 +1832,13 @@ function subscribeToRealtimeChanges() {
       { event: '*', schema: 'public', table: 'holidays' },
       async () => {
         await loadHolidaysFromSupabase();
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'region_teams' },
+      async () => {
+        await loadRegionTeamsFromSupabase();
       }
     )
     .subscribe();
@@ -3938,68 +4054,126 @@ function renderTeamManageList(region) {
   `;
 }
 
-function saveTeamRegionChanges() {
+async function saveTeamRegionChanges() {
   const currentRegion = document.getElementById('admin-manage-region-select').value;
   if (!currentRegion) return;
 
   const parseArr = id => document.getElementById(id).value.split(',').map(s => s.trim()).filter(Boolean);
 
-  regionTeamData[currentRegion] = {
+  const updatedData = {
     install: parseArr('edit-install-teams'),
     safety: parseArr('edit-safety-teams'),
     auto: parseArr('edit-auto-teams'),
     shelf: parseArr('edit-shelf-teams')
   };
 
-  saveLocalState();
-  populateFormRegionOptions();
-  closeTeamRegionManageModal();
-  alert("팀 변경사항이 저장되었습니다.");
-}
+  try {
+    await saveRegionTeamToSupabase(currentRegion, updatedData);
 
-function addNewRegionPrompt() {
-  const name = prompt("새로 추가할 권역명을 입력하세요:");
-  if (name && !regionTeamData[name]) {
-    regionTeamData[name] = {
-      install: Array.from({ length: 25 }, (_, i) => `${name} 설치${i + 1}팀`),
-      safety: Array.from({ length: 25 }, (_, i) => `${name} 안전문${i + 1}팀`),
-      auto: Array.from({ length: 25 }, (_, i) => `${name} 자동${i + 1}팀`),
-      shelf: Array.from({ length: 25 }, (_, i) => `${name} 방호선반${i + 1}팀`)
-    };
+    regionTeamData[currentRegion] = updatedData;
+
     saveLocalState();
     populateFormRegionOptions();
-    openTeamRegionManageModal();
+    closeTeamRegionManageModal();
+    alert("팀 변경사항이 저장되었습니다.");
+  } catch (error) {
+    console.error('팀 변경사항 저장 실패:', error);
+    alert(`팀 변경사항 저장에 실패했습니다.\n${error.message || 'Supabase 연결 및 테이블 설정을 확인하세요.'}`);
   }
 }
 
-function renameCurrentRegion() {
+async function addNewRegionPrompt() {
+  const name = prompt("새로 추가할 권역명을 입력하세요:");
+  if (!name) return;
+
+  if (regionTeamData[name]) {
+    alert('이미 존재하는 권역명입니다.');
+    return;
+  }
+
+  const newTeamData = {
+    install: Array.from({ length: 25 }, (_, i) => `${name} 설치${i + 1}팀`),
+    safety: Array.from({ length: 25 }, (_, i) => `${name} 안전문${i + 1}팀`),
+    auto: Array.from({ length: 25 }, (_, i) => `${name} 자동${i + 1}팀`),
+    shelf: Array.from({ length: 25 }, (_, i) => `${name} 방호선반${i + 1}팀`)
+  };
+
+  try {
+    await saveRegionTeamToSupabase(name, newTeamData);
+
+    regionTeamData[name] = newTeamData;
+
+    saveLocalState();
+    populateFormRegionOptions();
+    openTeamRegionManageModal();
+  } catch (error) {
+    console.error('권역 추가 실패:', error);
+    alert(`권역 추가에 실패했습니다.\n${error.message || 'Supabase 연결 및 테이블 설정을 확인하세요.'}`);
+  }
+}
+
+async function renameCurrentRegion() {
   const current = document.getElementById('admin-manage-region-select').value;
   const newName = document.getElementById('admin-edit-region-name').value.trim();
-  if (newName && newName !== current) {
-    regionTeamData[newName] = regionTeamData[current];
+  if (!newName || newName === current) return;
+
+  if (regionTeamData[newName]) {
+    alert('이미 존재하는 권역명입니다.');
+    return;
+  }
+
+  const teamData = regionTeamData[current];
+
+  try {
+    await saveRegionTeamToSupabase(newName, teamData);
+    await deleteRegionTeamFromSupabase(current);
+
+    regionTeamData[newName] = teamData;
     delete regionTeamData[current];
+
     saveLocalState();
     populateFormRegionOptions();
     openTeamRegionManageModal();
+  } catch (error) {
+    console.error('권역명 변경 실패:', error);
+    alert(`권역명 변경에 실패했습니다.\n${error.message || 'Supabase 연결 및 테이블 설정을 확인하세요.'}`);
   }
 }
 
-function deleteCurrentRegion() {
+async function deleteCurrentRegion() {
   const current = document.getElementById('admin-manage-region-select').value;
-  if (confirm(`'${current}' 권역을 삭제하시겠습니까?`)) {
+  if (!confirm(`'${current}' 권역을 삭제하시겠습니까?`)) return;
+
+  try {
+    await deleteRegionTeamFromSupabase(current);
+
     delete regionTeamData[current];
+
     saveLocalState();
     populateFormRegionOptions();
     openTeamRegionManageModal();
+  } catch (error) {
+    console.error('권역 삭제 실패:', error);
+    alert(`권역 삭제에 실패했습니다.\n${error.message || 'Supabase 연결 및 테이블 설정을 확인하세요.'}`);
   }
 }
 
-function resetTeamsToDefault() {
-  if (confirm("팀 목록을 초기 기본 25개팀 설정으로 초기화하시겠습니까?")) {
-    regionTeamData = generateDefaultTeams();
+async function resetTeamsToDefault() {
+  if (!confirm("팀 목록을 초기 기본 25개팀 설정으로 초기화하시겠습니까?")) return;
+
+  const defaults = generateDefaultTeams();
+
+  try {
+    await replaceAllRegionTeamsInSupabase(defaults);
+
+    regionTeamData = defaults;
+
     saveLocalState();
     populateFormRegionOptions();
     openTeamRegionManageModal();
+  } catch (error) {
+    console.error('기본값 초기화 실패:', error);
+    alert(`기본값 초기화에 실패했습니다.\n${error.message || 'Supabase 연결 및 테이블 설정을 확인하세요.'}`);
   }
 }
 
