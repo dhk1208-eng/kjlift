@@ -1383,7 +1383,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadLocalState();
   initCloudIfConfigured();
   setupInitialDates();
-  populateFilterDropdowns();
+  populateFormRegionOptions();
   renderCalendar();
   updateQuickStats();
   renderUtilizationView();
@@ -2191,7 +2191,7 @@ async function loginUserFromTable() {
 		startInactivityTimer(); //로그인 시 타이머 시작
 
     if (isAdmin) {
-      alert(`${userName} 관리자님, 로그인되었습니다.`);
+      alert(`${userName}, 관리자 로그인되었습니다.`);
     } else {
       alert(`${userName}님, 로그인되었습니다.\n일정 등록 및 수정이 가능합니다.`);
     }
@@ -3952,7 +3952,7 @@ function saveTeamRegionChanges() {
   };
 
   saveLocalState();
-  populateFilterDropdowns();
+  populateFormRegionOptions();
   closeTeamRegionManageModal();
   alert("팀 변경사항이 저장되었습니다.");
 }
@@ -3967,7 +3967,7 @@ function addNewRegionPrompt() {
       shelf: Array.from({ length: 25 }, (_, i) => `${name} 방호선반${i + 1}팀`)
     };
     saveLocalState();
-    populateFilterDropdowns();
+    populateFormRegionOptions();
     openTeamRegionManageModal();
   }
 }
@@ -3979,7 +3979,7 @@ function renameCurrentRegion() {
     regionTeamData[newName] = regionTeamData[current];
     delete regionTeamData[current];
     saveLocalState();
-    populateFilterDropdowns();
+    populateFormRegionOptions();
     openTeamRegionManageModal();
   }
 }
@@ -3989,7 +3989,7 @@ function deleteCurrentRegion() {
   if (confirm(`'${current}' 권역을 삭제하시겠습니까?`)) {
     delete regionTeamData[current];
     saveLocalState();
-    populateFilterDropdowns();
+    populateFormRegionOptions();
     openTeamRegionManageModal();
   }
 }
@@ -3998,7 +3998,7 @@ function resetTeamsToDefault() {
   if (confirm("팀 목록을 초기 기본 25개팀 설정으로 초기화하시겠습니까?")) {
     regionTeamData = generateDefaultTeams();
     saveLocalState();
-    populateFilterDropdowns();
+    populateFormRegionOptions();
     openTeamRegionManageModal();
   }
 }
