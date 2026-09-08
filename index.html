@@ -287,7 +287,12 @@ body {
     <!-- Calendar Container -->
     <div id="calendar-wrapper" class="bg-white rounded-xl shadow-xs border border-slate-200/80 p-3 transition-all duration-300">
       <div class="flex justify-between items-center mb-3">
-        <h2 id="calendar-month-year" class="text-base font-extrabold text-slate-800">2026년 8월</h2>
+        <div class="flex items-center gap-1">
+          <h2 id="calendar-month-year" class="text-base font-extrabold text-slate-800">2026년 8월</h2>
+          <button onclick="toggleScheduleSearch()" id="schedule-search-toggle-btn" title="일정 검색" class="p-1.5 active:bg-slate-100 rounded-lg text-slate-500">
+            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+          </button>
+        </div>
         <div class="flex items-center gap-1">
           <button onclick="prevMonth()" class="p-1.5 active:bg-slate-100 rounded-lg text-slate-600"><i class="fa-solid fa-chevron-left text-xs"></i></button>
           <button onclick="todayMonth()" class="px-2 py-1 text-[11px] bg-slate-100 active:bg-slate-200 rounded-md font-bold text-slate-700">오늘</button>
@@ -302,6 +307,22 @@ body {
           </button>
         </div>
       </div>
+
+      <!-- 일정 검색 패널 -->
+      <div id="schedule-search-panel" class="hidden mb-2 flex items-center gap-1.5">
+        <select id="schedule-search-field" class="shrink-0 bg-slate-50 border border-slate-300 rounded-lg text-[11px] p-1.5 font-semibold text-slate-700 outline-none focus:border-amber-400">
+          <option value="region">담당권역</option>
+          <option value="siteName">현장명</option>
+          <option value="workContent">작업내용</option>
+          <option value="creator_user_name">작성자</option>
+          <option value="notes">메모</option>
+        </select>
+        <input type="text" id="schedule-search-input" oninput="performScheduleSearch()" placeholder="검색어 입력" class="flex-grow bg-slate-50 border border-slate-300 rounded-lg text-xs p-1.5 outline-none focus:border-amber-400">
+        <button onclick="closeScheduleSearch()" class="shrink-0 p-1.5 text-slate-400 active:text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div id="schedule-search-results" class="hidden mb-2 max-h-56 overflow-y-auto space-y-1 border border-slate-200 rounded-lg p-1.5 bg-slate-50/70 custom-scrollbar"></div>
 
       <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-slate-400 py-1 border-b border-slate-100">
         <div class="text-red-500">일</div>
@@ -2378,6 +2399,94 @@ function setFilter(filter) {
 function setRegionFilter(region) {
   selectedRegionFilter = region;
   renderCalendar();
+}
+
+// ✅ 일정 검색 기능
+function toggleScheduleSearch() {
+  const panel = document.getElementById('schedule-search-panel');
+  const isHidden = panel.classList.contains('hidden');
+  if (isHidden) {
+    panel.classList.remove('hidden');
+    document.getElementById('schedule-search-input').focus();
+  } else {
+    closeScheduleSearch();
+  }
+}
+
+function closeScheduleSearch() {
+  document.getElementById('schedule-search-panel').classList.add('hidden');
+  const resultsEl = document.getElementById('schedule-search-results');
+  resultsEl.classList.add('hidden');
+  resultsEl.innerHTML = '';
+  document.getElementById('schedule-search-input').value = '';
+}
+
+function performScheduleSearch() {
+  const field = document.getElementById('schedule-search-field').value;
+  const query = document.getElementById('schedule-search-input').value.trim().toLowerCase();
+  const resultsEl = document.getElementById('schedule-search-results');
+
+  if (!query) {
+    resultsEl.classList.add('hidden');
+    resultsEl.innerHTML = '';
+    return;
+  }
+
+  const fieldLabels = {
+    region: '담당권역',
+    siteName: '현장명',
+    workContent: '작업내용',
+    creator_user_name: '작성자',
+    notes: '메모'
+  };
+
+  const matched = tasks
+    .filter(t => {
+      const val = t[field];
+      return val && String(val).toLowerCase().includes(query);
+    })
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  if (matched.length === 0) {
+    resultsEl.innerHTML = `<div class="text-[11px] text-slate-400 text-center py-3">'${escapeHtml(fieldLabels[field] || '')}' 항목에서 검색 결과가 없습니다.</div>`;
+  } else {
+    resultsEl.innerHTML = matched.map(t => `
+      <div class="p-1.5 bg-white rounded-lg border border-slate-200 cursor-pointer active:bg-amber-50 hover:border-amber-300 transition" onclick="goToSearchResult('${t.id}')">
+        <div class="flex justify-between items-center gap-1">
+          <span class="text-[11px] font-black text-amber-700">${escapeHtml(t.date || '')}</span>
+          <div class="flex items-center gap-1">
+            ${t.region ? `<span class="text-[9.5px] text-sky-700 font-bold bg-sky-100 px-1.5 py-0.5 rounded">${escapeHtml(String(t.region))}</span>` : ''}
+            ${t.workType ? `<span class="text-[9.5px] text-slate-600 font-bold bg-slate-100 px-1.5 py-0.5 rounded">${escapeHtml(String(t.workType))}</span>` : ''}
+          </div>
+        </div>
+        <div class="text-[11.5px] font-bold text-slate-800 mt-0.5">${escapeHtml(t.siteName || '현장명 없음')}</div>
+        ${t.workContent ? `<div class="text-[10.5px] text-slate-500">${escapeHtml(String(t.workContent))}</div>` : ''}
+        ${field === 'creator_user_name' && t.creator_user_name ? `<div class="text-[10px] text-slate-400 mt-0.5"><i class="fa-solid fa-pen"></i> ${escapeHtml(String(t.creator_user_name))}</div>` : ''}
+        ${field === 'notes' && t.notes ? `<div class="text-[10px] text-amber-700 mt-0.5 bg-amber-50 rounded px-1 py-0.5"><i class="fa-solid fa-note-sticky"></i> ${escapeHtml(String(t.notes))}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  resultsEl.classList.remove('hidden');
+}
+
+function goToSearchResult(taskId) {
+  const task = tasks.find(t => String(t.id) === String(taskId));
+  if (!task || !task.date) return;
+
+  const [y, m, d] = task.date.split('-').map(Number);
+  currentDate = new Date(y, m - 1, 1);
+  renderCalendar();
+  closeScheduleSearch();
+
+  if (!(currentUser || isAdmin)) {
+    alert('로그인 후 사용할 수 있습니다.');
+    return;
+  }
+
+  const dayTasks = tasks.filter(t => t.date === task.date);
+  const holidayName = getHolidayName(task.date);
+  openDayDetailSheet(task.date, dayTasks, holidayName);
 }
 
 function renderCalendar() {
