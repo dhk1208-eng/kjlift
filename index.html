@@ -314,7 +314,7 @@ body {
           <option value="region">담당권역</option>
           <option value="siteName">현장명</option>
           <option value="workContent">작업내용</option>
-          <option value="creator_user_name">작성자</option>
+          <option value="creator_user_name">등록자</option>
           <option value="notes">메모</option>
         </select>
         <input type="text" id="schedule-search-input" oninput="performScheduleSearch()" placeholder="검색어 입력" class="flex-grow bg-slate-50 border border-slate-300 rounded-lg text-xs p-1.5 outline-none focus:border-amber-400">
@@ -1233,7 +1233,9 @@ body {
         <option value="region">담당권역</option>
         <option value="site_name">현장명</option>
         <option value="work_content">작업내용</option>
-        <option value="creator_user_name">작성자</option>
+        <option value="creator">등록자</option>
+        <option value="updater">수정자</option>
+        <option value="deleter">삭제자</option>
         <option value="notes">메모</option>
       </select>
       <input type="text" id="task-log-search-input" oninput="performTaskLogSearch()" placeholder="검색어 입력" class="w-40 bg-slate-50 border border-slate-300 rounded-lg text-xs p-1.5 outline-none focus:border-amber-400">
@@ -2449,7 +2451,7 @@ function performScheduleSearch() {
     region: '담당권역',
     siteName: '현장명',
     workContent: '작업내용',
-    creator_user_name: '작성자',
+    creator_user_name: '등록자',
     notes: '메모'
   };
 
@@ -3658,7 +3660,14 @@ function performTaskLogSearch() {
     return;
   }
 
+  // 등록자/수정자/삭제자는 별도 컬럼이 아니라 action(CREATE/UPDATE/DELETE) + user_name 조합으로 판단
+  const actionFieldMap = { creator: 'CREATE', updater: 'UPDATE', deleter: 'DELETE' };
+
   const filtered = currentTaskLogs.filter(log => {
+    if (actionFieldMap[field]) {
+      if (log.action !== actionFieldMap[field]) return false;
+      return log.user_name && String(log.user_name).toLowerCase().includes(query);
+    }
     const val = log[field];
     return val && String(val).toLowerCase().includes(query);
   });
