@@ -1659,28 +1659,21 @@ async function loadHolidaysFromSupabase() {
 async function saveCloudHoliday(dateStr, name, holidayType = 'custom') {
   if (!supabaseClient || !isCloudConnected) return;
 
-  const { error } = await supabaseClient
-    .from('holidays')
-    .upsert({
-      holiday_date: dateStr,
-      holiday_name: name,
-      holiday_type: holidayType,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'holiday_date' });
-
-  if (error) throw error;
+  await callUserRpc('save_holiday_secure', {
+    p_date: dateStr,
+    p_name: name,
+    p_type: holidayType,
+    p_username: currentUser?.username
+  });
 }
 
 async function deleteCloudHoliday(dateStr) {
   if (!supabaseClient || !isCloudConnected) return;
 
-  const { error } = await supabaseClient
-    .from('holidays')
-    .delete()
-    .eq('holiday_date', dateStr)
-    .eq('holiday_type', 'custom'); // 법정 공휴일은 삭제하지 않음
-
-  if (error) throw error;
+  await callUserRpc('delete_holiday_secure', {
+    p_date: dateStr,
+    p_username: currentUser?.username
+  });
 }
 
 async function loadTasksFromSupabase() {
@@ -1778,17 +1771,15 @@ async function pushAllRegionTeamsToSupabase(data) {
     install: data[region].install || [],
     safety: data[region].safety || [],
     auto: data[region].auto || [],
-    shelf: data[region].shelf || [],
-    updated_at: new Date().toISOString()
+    shelf: data[region].shelf || []
   }));
 
   if (rows.length === 0) return;
 
-  const { error } = await supabaseClient
-    .from('region_teams')
-    .upsert(rows, { onConflict: 'region' });
-
-  if (error) throw error;
+  await callUserRpc('admin_reset_region_teams', {
+    p_data: rows,
+    p_admin_username: currentUser?.username
+  });
 }
 
 async function saveRegionTeamToSupabase(region, teamData) {
@@ -1797,18 +1788,14 @@ async function saveRegionTeamToSupabase(region, teamData) {
     return;
   }
 
-  const { error } = await supabaseClient
-    .from('region_teams')
-    .upsert({
-      region,
-      install: teamData.install || [],
-      safety: teamData.safety || [],
-      auto: teamData.auto || [],
-      shelf: teamData.shelf || [],
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'region' });
-
-  if (error) throw error;
+  await callUserRpc('admin_save_region_team', {
+    p_region: region,
+    p_install: teamData.install || [],
+    p_safety: teamData.safety || [],
+    p_auto: teamData.auto || [],
+    p_shelf: teamData.shelf || [],
+    p_admin_username: currentUser?.username
+  });
 }
 
 async function deleteRegionTeamFromSupabase(region) {
@@ -1817,12 +1804,10 @@ async function deleteRegionTeamFromSupabase(region) {
     return;
   }
 
-  const { error } = await supabaseClient
-    .from('region_teams')
-    .delete()
-    .eq('region', region);
-
-  if (error) throw error;
+  await callUserRpc('admin_delete_region_team', {
+    p_region: region,
+    p_admin_username: currentUser?.username
+  });
 }
 
 async function replaceAllRegionTeamsInSupabase(data) {
@@ -1830,14 +1815,6 @@ async function replaceAllRegionTeamsInSupabase(data) {
     console.warn('⚠️ Supabase 연결 안 됨 - 로컬에서만 초기화됩니다.');
     return;
   }
-
-  // 기존 전체 삭제 후 재삽입 (region은 빈 문자열일 수 없으므로 neq 트릭 사용)
-  const { error: deleteError } = await supabaseClient
-    .from('region_teams')
-    .delete()
-    .neq('region', '');
-
-  if (deleteError) throw deleteError;
 
   await pushAllRegionTeamsToSupabase(data);
 }
@@ -1890,28 +1867,20 @@ async function saveCloudTask(taskData) {
 
   // 빈 마스트 입력값을 null로 변환
   const payload = prepareTaskForSupabase(taskData);
-  console.log('📤 Supabase upsert 시작, 페이로드:', payload);
+  console.log('📤 Supabase 저장(RPC) 시작, 페이로드:', payload);
 
-  // 중요: taskData가 아니라 payload를 저장해야 합니다.
-  const { data, error } = await supabaseClient
-    .from('tasks')
-    .upsert(payload, { onConflict: 'id' })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('❌ Supabase 일정 저장 실패:', error);
-    console.error('❌ 에러 상세:', {
-      message: error.message,
-      status: error.status,
-      code: error.code,
-      details: error.details
+  try {
+    const data = await callUserRpc('save_task_secure', {
+      p_task: payload,
+      p_username: currentUser?.username
     });
+
+    console.log('✅ Supabase 저장 성공, 반환 데이터:', data);
+    return { data, error: null };
+  } catch (error) {
+    console.error('❌ Supabase 일정 저장 실패:', error);
     throw new Error(`Supabase 저장 실패: ${error.message}`);
   }
-
-  console.log('✅ Supabase upsert 성공, 반환 데이터:', data);
-  return { data, error: null };
 }
 
 
@@ -1920,17 +1889,16 @@ async function deleteCloudTask(id) {
     return { error: null };
   }
 
-  const { error } = await supabaseClient
-    .from('tasks')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
+  try {
+    await callUserRpc('delete_task_secure', {
+      p_id: id,
+      p_username: currentUser?.username
+    });
+    return { error: null };
+  } catch (error) {
     console.error('Supabase 일정 삭제 실패:', error);
     throw error;
   }
-
-  return { error: null };
 }
 // --- CLOUD SYNC (SUPABASE) -------------------------------------
 
@@ -3488,14 +3456,13 @@ async function saveAllParsedTasks() {
     // 마스트 미입력 값('')도 null로 바꿉니다.
     const payload = window.lastParsedTasks.map(prepareTaskForSupabase);
 
-    // Supabase에 일정 일괄 저장
+    // Supabase에 일정 일괄 저장 (RPC를 순차 호출)
     if (isCloudConnected) {
-      const { error } = await supabaseClient
-        .from('tasks')
-        .upsert(payload, { onConflict: 'id' });
-
-      if (error) {
-        throw error;
+      for (const task of payload) {
+        await callUserRpc('save_task_secure', {
+          p_task: task,
+          p_username: currentUser?.username
+        });
       }
     }
 
