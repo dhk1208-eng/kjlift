@@ -12,6 +12,30 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1048/1048953.png">
 
+<!-- ✅ 개발자도구(F12) 및 우클릭 차단 (완전한 보안 장치는 아니며, 일반 사용자의 접근을 억제하는 용도) -->
+<script>
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    // F12
+    if (e.key === 'F12') {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+Shift+I / J / C (개발자도구), Ctrl+U (소스보기)
+    if (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
+      e.preventDefault();
+      return false;
+    }
+    if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+      e.preventDefault();
+      return false;
+    }
+  });
+</script>
+
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -704,7 +728,7 @@ body {
           type="text"
           id="auth-signup-username"
           autocomplete="username"
-          placeholder="영문, 숫자 조합 아이디"
+          placeholder="영문, 숫자 조합, 4자리 이상"
           class="w-full border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-sm focus:border-emerald-600"
         >
       </div>
@@ -1416,7 +1440,19 @@ function loadLocalState() {
 
   const savedUser = localStorage.getItem('gukje_current_user');
   if (savedUser) {
-    try { currentUser = JSON.parse(savedUser); } catch (e) {}
+    // ✅ 공용기기 보안: 마지막 사용시각으로부터 60분(자동 로그아웃 기준)이 지났다면
+    //    브라우저를 껐다 켜도 이전 사용자 세션을 자동 복원하지 않고 로그아웃 처리합니다.
+    const lastActivityRaw = localStorage.getItem('gukje_last_activity');
+    const lastActivity = lastActivityRaw ? parseInt(lastActivityRaw, 10) : null;
+    const sessionExpired = !lastActivity || (Date.now() - lastActivity) > INACTIVITY_TIMEOUT_MS;
+
+    if (sessionExpired) {
+      localStorage.removeItem('gukje_current_user');
+      localStorage.removeItem('gukje_last_activity');
+      currentUser = null;
+    } else {
+      try { currentUser = JSON.parse(savedUser); } catch (e) {}
+    }
   }
 
   // 권한은 통합 로그인에서 받은 사용자 역할(role)로만 결정합니다.
@@ -2417,7 +2453,10 @@ async function registerUserToTable() {
 function startInactivityTimer() {
   if (inactivityTimer) clearTimeout(inactivityTimer);
   lastActivityTime = Date.now();
-  
+  // ✅ 공용기기 보안: 마지막 활동 시각을 저장해두어, 브라우저를 껐다 켜도
+  //    60분 경과 여부를 정확히 판단할 수 있게 합니다 (loadLocalState에서 사용).
+  localStorage.setItem('gukje_last_activity', String(lastActivityTime));
+
   inactivityTimer = setTimeout(() => {
     console.log('60분 동안 사용하지 않아 자동 로그아웃됩니다.');
     stopInactivityTimer();
@@ -2446,6 +2485,7 @@ function stopInactivityTimer() {
     inactivityTimer = null;
   }
   lastActivityTime = null;
+  localStorage.removeItem('gukje_last_activity');
 }
 
 //사용자 활동(클릭, 키보드 입력 등) 감지
