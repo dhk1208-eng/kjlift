@@ -1239,6 +1239,9 @@ body {
         <option value="notes">메모</option>
       </select>
       <input type="text" id="task-log-search-input" oninput="performTaskLogSearch()" placeholder="검색어 입력" class="w-40 bg-slate-50 border border-slate-300 rounded-lg text-xs p-1.5 outline-none focus:border-amber-400">
+      <button onclick="resetTaskLogSearch()" title="검색 초기화" class="shrink-0 p-1.5 text-slate-400 active:text-slate-600">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
     </div>
 
     <div class="p-3 bg-white border-t border-slate-100 flex justify-between items-center">
@@ -3673,6 +3676,17 @@ function performTaskLogSearch() {
   });
 
   renderTaskLogsList(filtered);
+}
+
+// ✅ 작업 이력 로그 검색 초기화 (처음 화면으로 복귀)
+function resetTaskLogSearch() {
+  const fieldSelect = document.getElementById('task-log-search-field');
+  const searchInput = document.getElementById('task-log-search-input');
+
+  if (fieldSelect) fieldSelect.selectedIndex = 0;
+  if (searchInput) searchInput.value = '';
+
+  renderTaskLogsList(currentTaskLogs);
 }
 
 function closeTaskLogsModal() {
