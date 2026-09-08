@@ -2752,11 +2752,11 @@ function renderCalendar() {
 
     // Render Holiday Label Badge if present
     if (holidayName) {
-      taskBadgesHtml += `<div class="text-[8px] bg-red-100 text-red-700 font-extrabold px-1 py-0.5 rounded border border-red-200 mb-0.5 truncate flex items-center gap-0.5"><i class="fa-solid fa-flag text-[7px]"></i> ${holidayName}</div>`;
+      taskBadgesHtml += `<div class="text-[8px] bg-red-100 text-red-700 font-extrabold px-1 py-0.5 rounded border border-red-200 mb-0.5 truncate flex items-center gap-0.5"><i class="fa-solid fa-flag text-[7px]"></i> ${escapeHtml(String(holidayName))}</div>`;
     }
 
     dayTasks.slice(0, 3).forEach(t => {
-      taskBadgesHtml += `<div class="text-[9px] px-1 py-0.5 rounded border mb-0.5 truncate font-medium type-${t.workType}">${t.siteName} (${t.workType})</div>`;
+      taskBadgesHtml += `<div class="text-[9px] px-1 py-0.5 rounded border mb-0.5 truncate font-medium type-${escapeHtml(String(t.workType || ''))}">${escapeHtml(String(t.siteName || ''))} (${escapeHtml(String(t.workType || ''))})</div>`;
     });
 
     if (dayTasks.length > 3) {
@@ -2803,9 +2803,9 @@ function openDayDetailSheet(dateStr, dayTasks, holidayName) {
   selectedDayString = dateStr;
   const isCustom = !!customHolidays[dateStr];
 
-  let titleHtml = `${dateStr} 일정`;
+  let titleHtml = `${escapeHtml(dateStr)} 일정`;
   if (holidayName) {
-    titleHtml += ` <span class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold ml-1">${holidayName}</span>`;
+    titleHtml += ` <span class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold ml-1">${escapeHtml(String(holidayName))}</span>`;
   }
 
   document.getElementById('day-detail-title').innerHTML = titleHtml;
@@ -2832,23 +2832,23 @@ function openDayDetailSheet(dateStr, dayTasks, holidayName) {
       <div class="p-2.5 bg-slate-50 border ${t.completed ? 'border-red-300 bg-red-50/40' : 'border-slate-200'} rounded-xl space-y-1.5 hover:border-amber-400 transition cursor-pointer" onclick="openEditTaskModal(this.dataset.taskId)" data-task-id="${escapeHtml(String(t.id))}">
         <div class="flex justify-between items-center gap-1 flex-wrap">
           <div class="flex items-center gap-1">
-            <span class="badge-${t.workType} px-2 py-0.5 rounded-md text-[10px] font-extrabold">${t.workType}</span>
-            <span class="text-[10px] text-slate-600 font-semibold bg-white px-1.5 py-0.5 rounded border border-slate-200">📝 ${t.creator_user_name || '알 수 없음'}</span>
+            <span class="badge-${escapeHtml(String(t.workType || ''))} px-2 py-0.5 rounded-md text-[10px] font-extrabold">${escapeHtml(String(t.workType || ''))}</span>
+            <span class="text-[10px] text-slate-600 font-semibold bg-white px-1.5 py-0.5 rounded border border-slate-200">📝 ${escapeHtml(String(t.creator_user_name || '알 수 없음'))}</span>
           </div>
           ${t.completed ? `<span class="font-bold text-xs sm:text-sm text-red-600">&lt;&lt;완료&gt;&gt;</span>` : ''}
           ${t.region ? `<span class="text-[10px] text-sky-700 font-black bg-sky-100 px-1.5 py-0.5 rounded"><i class="fa-solid fa-map-pin"></i> ${escapeHtml(String(t.region))}</span>` : ''}
-          <span class="font-bold text-slate-800 text-xs">${t.siteName} ${t.workContent ? `(${t.workContent})` : ''}</span>
+          <span class="font-bold text-slate-800 text-xs">${escapeHtml(String(t.siteName || ''))} ${t.workContent ? `(${escapeHtml(String(t.workContent))})` : ''}</span>
           <span class="text-[10px] text-amber-700 font-black bg-amber-100 px-1.5 py-0.5 rounded">${t.quantity || 1}대</span>
         </div>
         <div class="text-[10px] text-slate-600 flex flex-wrap gap-x-2 gap-y-0.5">
-          <span><b class="text-slate-800">장비:</b> ${t.equipment || '-'}</span>
+          <span><b class="text-slate-800">장비:</b> ${escapeHtml(String(t.equipment || '-'))}</span>
           <span><b class="text-slate-800">마스트:</b> ${t.mastCount ? `${t.mastCount}단 (${t.mastHeight}m)` : '-'}</span>
         </div>
         <div class="text-[9.5px] text-slate-500 bg-white p-1.5 rounded-lg border border-slate-100 flex flex-wrap gap-2">
-          ${t.installTeam ? `<span>🔧 ${t.installTeam}</span>` : ''}
-          ${t.safetyTeam ? `<span>🛡️ ${t.safetyTeam}</span>` : ''}
-          ${t.autoTeam ? `<span>⚙️ ${t.autoTeam}</span>` : ''}
-          ${t.shelfTeam ? `<span>🪖 ${t.shelfTeam}</span>` : ''}
+          ${t.installTeam ? `<span>🔧 ${escapeHtml(String(t.installTeam))}</span>` : ''}
+          ${t.safetyTeam ? `<span>🛡️ ${escapeHtml(String(t.safetyTeam))}</span>` : ''}
+          ${t.autoTeam ? `<span>⚙️ ${escapeHtml(String(t.autoTeam))}</span>` : ''}
+          ${t.shelfTeam ? `<span>🪖 ${escapeHtml(String(t.shelfTeam))}</span>` : ''}
         </div>
         ${t.notes ? `<div class="text-[9.5px] text-slate-600 bg-amber-50 p-1.5 rounded-lg border border-amber-100"><b class="text-amber-800"><i class="fa-solid fa-note-sticky"></i> 비고/담당자메모:</b> ${escapeHtml(String(t.notes))}</div>` : ''}
       </div>
@@ -3200,7 +3200,7 @@ function saveTaskFromModal() {
   if (duplicates.length > 0) {
     pendingTaskToSave = taskData;
     document.getElementById('duplicate-warning-msg').innerText = `${date} 일자에 동일한 팀의 배정이 이미 존재합니다.`;
-    document.getElementById('duplicate-details-list').innerHTML = duplicates.map(d => `• ${d.siteName} (${d.workType})`).join('<br>');
+    document.getElementById('duplicate-details-list').innerHTML = duplicates.map(d => `• ${escapeHtml(String(d.siteName || ''))} (${escapeHtml(String(d.workType || ''))})`).join('<br>');
     document.getElementById('duplicate-warning-modal').classList.remove('hidden');
     return;
   }
@@ -3458,11 +3458,11 @@ function renderParsedResults(parsedTasks) {
   list.innerHTML = parsedTasks.map((t, idx) => `
     <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-xs">
       <div class="flex justify-between items-center">
-        <span class="font-bold text-slate-800">${t.date} | ${t.siteName}</span>
-        <span class="badge-${t.workType} px-1.5 py-0.5 rounded text-[10px] font-bold">${t.workType} ${t.quantity}대</span>
+        <span class="font-bold text-slate-800">${escapeHtml(String(t.date || ''))} | ${escapeHtml(String(t.siteName || ''))}</span>
+        <span class="badge-${escapeHtml(String(t.workType || ''))} px-1.5 py-0.5 rounded text-[10px] font-bold">${escapeHtml(String(t.workType || ''))} ${t.quantity}대</span>
       </div>
       <div class="text-[10px] text-slate-500">
-        권역: ${t.region} | 장비: ${t.equipment || '-'} | 마스트: ${t.mastCount ? `${t.mastCount}단` : '-'}
+        권역: ${escapeHtml(String(t.region || ''))} | 장비: ${escapeHtml(String(t.equipment || '-'))} | 마스트: ${t.mastCount ? `${t.mastCount}단` : '-'}
       </div>
     </div>
   `).join('');
@@ -3905,7 +3905,7 @@ function renderUtilizationView() {
     listContainer.innerHTML = sites.map(site => `
       <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs cursor-pointer hover:border-amber-400 transition" onclick="openEditTaskModal(this.dataset.taskId)" data-task-id="${escapeHtml(String(siteMap[site].taskId))}">
         <div>
-          <span class="font-extrabold text-slate-800 block">${siteMap[site].region ? `<span class="text-sky-700"><i class="fa-solid fa-map-pin"></i> ${escapeHtml(String(siteMap[site].region))}</span> ` : ''}${site}</span>
+          <span class="font-extrabold text-slate-800 block">${siteMap[site].region ? `<span class="text-sky-700"><i class="fa-solid fa-map-pin"></i> ${escapeHtml(String(siteMap[site].region))}</span> ` : ''}${escapeHtml(String(site))}</span>
           <span class="text-[10px] text-slate-500">누적설치: ${siteMap[site].install}대 | 누적해체: ${siteMap[site].dismantle}대</span>
         </div>
         <span class="font-black text-amber-700 bg-amber-100 px-2 py-1 rounded-lg text-xs">${siteMap[site].current}대 가동 중</span>
@@ -4498,14 +4498,14 @@ function renderUserPermissionList() {
 	  list.innerHTML = userPermissions.filter(u => u.role !== 'admin').map(u => `
 	    <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
 	      <div>
-	        <span class="font-extrabold text-slate-800 block">${u.name}</span>
+	        <span class="font-extrabold text-slate-800 block">${escapeHtml(String(u.name || '이름 없음'))}</span>
 	        <span class="text-[10px] text-slate-500 font-mono">
-	          ${u.username || '-'} / ${u.phone || '전화번호 미입력'}
+	          ${escapeHtml(String(u.username || '-'))} / ${escapeHtml(String(u.phone || '전화번호 미입력'))}
 	        </span>
 	      </div>
 	
 	      <button
-	        onclick="toggleUserApproval('${u.user_key}', ${!u.approved})"
+	        onclick="toggleUserApproval('${escapeHtml(String(u.user_key))}', ${!u.approved})"
 	        class="px-3 py-1.5 rounded-lg text-xs font-bold ${
 	          u.approved
 	            ? 'bg-emerald-600 text-white'
