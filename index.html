@@ -1438,17 +1438,19 @@ function loadLocalState() {
     try { regionTeamData = JSON.parse(savedTeams); } catch (e) {}
   }
 
-  const savedUser = localStorage.getItem('gukje_current_user');
+  // ✅ 공용기기 보안: 로그인 정보는 localStorage가 아닌 sessionStorage에 저장합니다.
+  //    sessionStorage는 탭(브라우저)을 닫는 순간 자동으로 삭제되므로,
+  //    여러 사람이 번갈아 쓰는 기기에서 탭만 닫아도 로그인 상태가 남지 않습니다.
+  const savedUser = sessionStorage.getItem('gukje_current_user');
   if (savedUser) {
-    // ✅ 공용기기 보안: 마지막 사용시각으로부터 60분(자동 로그아웃 기준)이 지났다면
-    //    브라우저를 껐다 켜도 이전 사용자 세션을 자동 복원하지 않고 로그아웃 처리합니다.
-    const lastActivityRaw = localStorage.getItem('gukje_last_activity');
+    // 같은 탭 안에서도 60분 이상 활동이 없었다면(새로고침 시) 로그아웃 처리합니다.
+    const lastActivityRaw = sessionStorage.getItem('gukje_last_activity');
     const lastActivity = lastActivityRaw ? parseInt(lastActivityRaw, 10) : null;
     const sessionExpired = !lastActivity || (Date.now() - lastActivity) > INACTIVITY_TIMEOUT_MS;
 
     if (sessionExpired) {
-      localStorage.removeItem('gukje_current_user');
-      localStorage.removeItem('gukje_last_activity');
+      sessionStorage.removeItem('gukje_current_user');
+      sessionStorage.removeItem('gukje_last_activity');
       currentUser = null;
     } else {
       try { currentUser = JSON.parse(savedUser); } catch (e) {}
@@ -1728,7 +1730,7 @@ async function loadUsersFromSupabase() {
 
     if (found) {
       currentUser.approved = !!found.approved;
-      localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
+      sessionStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
       updateAuthUIStatus();
     }
   }
@@ -2335,7 +2337,7 @@ async function loginUserFromTable() {
       approved: userApproved
     };
 
-    localStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
+    sessionStorage.setItem('gukje_current_user', JSON.stringify(currentUser));
     localStorage.removeItem('gukje_is_admin');
 
 		updateAuthUIStatus();
@@ -2453,9 +2455,8 @@ async function registerUserToTable() {
 function startInactivityTimer() {
   if (inactivityTimer) clearTimeout(inactivityTimer);
   lastActivityTime = Date.now();
-  // ✅ 공용기기 보안: 마지막 활동 시각을 저장해두어, 브라우저를 껐다 켜도
-  //    60분 경과 여부를 정확히 판단할 수 있게 합니다 (loadLocalState에서 사용).
-  localStorage.setItem('gukje_last_activity', String(lastActivityTime));
+  // 같은 탭 안에서 새로고침해도 60분 경과 여부를 판단할 수 있도록 sessionStorage에 기록
+  sessionStorage.setItem('gukje_last_activity', String(lastActivityTime));
 
   inactivityTimer = setTimeout(() => {
     console.log('60분 동안 사용하지 않아 자동 로그아웃됩니다.');
@@ -2485,7 +2486,7 @@ function stopInactivityTimer() {
     inactivityTimer = null;
   }
   lastActivityTime = null;
-  localStorage.removeItem('gukje_last_activity');
+  sessionStorage.removeItem('gukje_last_activity');
 }
 
 //사용자 활동(클릭, 키보드 입력 등) 감지
@@ -2501,7 +2502,7 @@ function userLogout() {
   currentUser = null;
   isAdmin = false;
   stopInactivityTimer(); //타이머 중지
-  localStorage.removeItem('gukje_current_user');
+  sessionStorage.removeItem('gukje_current_user');
   localStorage.removeItem('gukje_is_admin');
   updateAuthUIStatus();
   closeUserAuthModal();
